@@ -2,7 +2,6 @@ class Album {
     fromMetadata(metadata) {
         const common = metadata.common;
         this.id = 0;
-        console.log(metadata);
         this.title = common.album ? common.album : '';
         this.year = common.year ? common.year : 0;
         this.artist = common.albumArtist ? common.albumArtist :
@@ -14,7 +13,6 @@ class Album {
         if (row == undefined) {
             return undefined;
         }
-        console.log(row);
         this.id = row.album_id;
         this.title = row.title;
         this.year = row.year;
