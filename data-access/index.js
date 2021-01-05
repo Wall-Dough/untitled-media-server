@@ -1,3 +1,7 @@
+/**
+ * @namespace dataAccess
+ */
+
 const sqlite3 = require('sqlite3');
 const dataObject = require('../data-object');
 
@@ -157,6 +161,13 @@ const getAllSongs = () => {
     });
 };
 
+/**
+ * @function getAllAlbums
+ * @memberof dataAccess
+ *
+ * Gets all albums
+ * @returns a Promise that resolves with an array of Albums
+ */
 const getAllAlbums = () => {
     return new Promise((resolve, reject) => {
         db.all(`select * from ALBUMS

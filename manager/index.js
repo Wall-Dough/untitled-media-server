@@ -41,10 +41,14 @@ const addSongFromPath = (path) => {
     });
 };
 
+
 const getAllSongs = () => {
     return dataAccess.getAllSongs();
 };
 
+/**
+ * @see {@link dataAccess.getAllAlbums}
+ */
 const getAllAlbums = () => {
     return dataAccess.getAllAlbums();
 }
