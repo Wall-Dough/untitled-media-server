@@ -15,6 +15,11 @@ class Album {
             return undefined;
         }
         console.log(row);
+        this.id = row.album_id;
+        this.title = row.title;
+        this.year = row.year;
+        this.artist = row.artist;
+        this.genre = row.genre;
         return this;
     }
 };

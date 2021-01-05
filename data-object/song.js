@@ -22,6 +22,7 @@ class Song {
         this.title = row.title;
         this.artist = row.artist;
         this.album = row.album;
+        this.albumId = row.album_id;
         this.discNumber = row.disc;
         this.trackNumber = row.track;
         this.year = row.year;
