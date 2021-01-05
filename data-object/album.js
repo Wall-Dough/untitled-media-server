@@ -17,11 +17,6 @@ class Album {
         console.log(row);
         return this;
     }
-    // album_id int,
-    //         title varchar(255),
-    //         arist varchar(255),
-    //         year int,
-    //         genre varchar(255)
 };
 
 module.exports.Album = Album;
