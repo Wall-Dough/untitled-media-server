@@ -45,5 +45,10 @@ const getAllSongs = () => {
     return dataAccess.getAllSongs();
 };
 
+const getAllAlbums = () => {
+    return dataAccess.getAllAlbums();
+}
+
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
+module.exports.getAllAlbums = getAllAlbums;

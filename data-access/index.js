@@ -157,6 +157,25 @@ const getAllSongs = () => {
     });
 };
 
+const getAllAlbums = () => {
+    return new Promise((resolve, reject) => {
+        db.all(`select * from ALBUMS
+        where album_id > 0;`, (err, rows) => {
+            if (err) {
+                console.log('Get all albums failed');
+                reject(err);
+            } else {
+                console.log('Got all albums');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Album().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
 const init = async () => {
     const promises = [];
     promises.push(createSongTable());
@@ -171,5 +190,6 @@ module.exports.addSong = addSong;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.addAlbum = addAlbum;
+module.exports.getAllAlbums = getAllAlbums;
 
 init();

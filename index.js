@@ -18,8 +18,13 @@ const addSongs1 = new Promise((resolve, reject) => {
 });
 
 addSongs1.then(() => {
-    manager.getAllSongs().then((rows) => {
-        console.log(rows);
+    manager.getAllSongs().then((songs) => {
+        console.log(songs);
+    }).catch((err) => {
+        console.log(err);
+    });
+    manager.getAllAlbums().then((albums) => {
+        console.log(albums);
     }).catch((err) => {
         console.log(err);
     });
