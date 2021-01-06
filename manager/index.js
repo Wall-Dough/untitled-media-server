@@ -1,5 +1,10 @@
+/**
+ * @namespace manager
+ */
+
 const dataAccess = require('../data-access');
 const dataObject = require('../data-object');
+const util = require('../util');
 const mm = require('music-metadata');
 
 const getAlbumFromMetadata = (metadata) => {
@@ -51,6 +56,18 @@ const getAllSongs = () => {
 };
 
 /**
+ * @function getSongById
+ * @memberof manager
+ * 
+ * Gets the song with the given song ID
+ * @param {number} id the song ID to query for
+ * @returns a Promise that resolves with the song
+ */
+const getSongById = (id) => {
+    return dataAccess.getSongById(id);
+};
+
+/**
  * @see {@link dataAccess.getAllAlbums}
  */
 const getAllAlbums = () => {
@@ -59,4 +76,5 @@ const getAllAlbums = () => {
 
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
+module.exports.getSongById = getSongById;
 module.exports.getAllAlbums = getAllAlbums;

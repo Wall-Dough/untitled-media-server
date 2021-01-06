@@ -1,22 +1,15 @@
 const express = require('express');
 const fs = require('fs');
 const util = require('../util');
-const EOL = require('os').EOL;
-const webInterface = require('../web-interface')
+const webInterface = require('../web-interface');
+const manager = require('../manager');
 
 const app = express();
 const port = 4041;
 
-const createPLS = (hostname, ids) => {
-    let plsString = '[playlist]';
-    let i = 0;
-    for (let id of ids) {
-        plsString += EOL + 'File' + (++i).toString() + '=';
-        plsString += 'http://' + hostname + ':' + port + '/song/' + id.toString();
-    }
-    plsString += EOL + 'NumberOfEntries=' + ids.length;
-    return plsString;
-}
+// This is the MIME type for a different kind of .pls file, but it's the only .pls type
+//  recognized by the MIME type library that express uses
+const PLS_MIME_TYPE = 'application/pls+xml';
 
 app.get('/', (req, res) => {
     webInterface.getHomepage().then((homepage) => {
@@ -55,7 +48,23 @@ app.get('/songs/', (req, res) => {
 });
 
 app.get('/songs/:songId', (req, res) => {
-    res.sendStatus(404);
+    manager.getSongById(Number(req.params.songId)).then((song) => {
+        const playlist = util.createPLS(`${req.hostname}:${port}`, [song.id]);
+        res.type(PLS_MIME_TYPE);
+        res.send(playlist);
+    }).catch((err) => {
+        console.log('Get song by ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/songs/:songId/file', (req, res) => {
+    manager.getSongById(Number(req.params.songId)).then((song) => {
+        res.sendFile(song.filePath);
+    }).catch((err) => {
+        console.log('Get song file by ID request failed');
+        res.send(err);
+    });
 });
 
 app.listen(port, () => {

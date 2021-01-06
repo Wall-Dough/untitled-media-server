@@ -136,14 +136,16 @@ const addSong = (song) => {
     });
 };
 
+const SONG_SELECT = `select s.song_id, s.file_path, s.title, s.artist, 
+s.album_id, s.disc, s.track, s.year, s.genre, 
+a.title as album
+from SONGS s,
+ALBUMS a
+where a.album_id = s.album_id`;
+
 const getAllSongs = () => {
     return new Promise((resolve, reject) => {
-        db.all(`select s.song_id, s.file_path, s.title, s.artist, 
-        s.album_id, s.disc, s.track, s.year, s.genre, 
-        a.title as album
-        from SONGS s,
-        ALBUMS a
-        where a.album_id = s.album_id
+        db.all(`${SONG_SELECT}
         and s.song_id > 0;`, (err, rows) => {
             if (err) {
                 console.log('Get all songs failed');
@@ -155,6 +157,28 @@ const getAllSongs = () => {
                     results.push(new dataObject.Song().fromDB(row));
                 }
                 resolve(results);
+            }
+        });
+    });
+};
+
+/**
+ * @function getSongById
+ * @memberof dataAccess
+ * 
+ * @param {number} id the song ID to query for
+ * @returns a Promise that resolves with the song
+ */
+const getSongById = (id) => {
+    return new Promise((resolve, reject) => {
+        db.get(`${SONG_SELECT}
+        and s.song_id = ${id};`, (err, row) => {
+            if (err) {
+                console.log('Get song by id failed');
+                reject(err);
+            } else {
+                console.log('Got song by id');
+                resolve(new dataObject.Song().fromDB(row));
             }
         });
     });
@@ -197,6 +221,7 @@ const init = async () => {
 
 module.exports.addSong = addSong;
 module.exports.getAllSongs = getAllSongs;
+module.exports.getSongById = getSongById;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.addAlbum = addAlbum;
 module.exports.getAllAlbums = getAllAlbums;
