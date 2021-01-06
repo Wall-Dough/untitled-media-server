@@ -169,8 +169,7 @@ const getAllSongs = () => {
  */
 const getAllAlbums = () => {
     return new Promise((resolve, reject) => {
-        db.all(`select * from ALBUMS
-        where album_id > 0;`, (err, rows) => {
+        db.all(`select * from ALBUMS;`, (err, rows) => {
             if (err) {
                 console.log('Get all albums failed');
                 reject(err);

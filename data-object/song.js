@@ -19,9 +19,12 @@ class Song {
     }
     fromDB(row) {
         this.id = row.song_id;
-        this.title = row.title;
-        this.artist = row.artist;
-        this.album = row.album;
+        this.title = row.title == undefined ? '' : row.title;
+        this.title = this.title.trim() == '' ? 'Untitled song' : this.title;
+        this.artist = row.artist == undefined ? '' : row.artist;
+        this.artist = this.artist.trim() == '' ? 'Unknown artist' : this.artist;
+        this.album = row.album == undefined ? '' : row.album;
+        this.album - this.album.trim() == '' ? 'Unknown album' : this.album;
         this.albumId = row.album_id;
         this.discNumber = row.disc;
         this.trackNumber = row.track;
