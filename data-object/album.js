@@ -14,9 +14,11 @@ class Album {
             return undefined;
         }
         this.id = row.album_id;
-        this.title = row.title;
+        this.title = row.title == undefined ? '' : row.title;
+        this.title = this.title.trim() == '' ? 'Unknown album' : this.title;
         this.year = row.year;
-        this.artist = row.artist;
+        this.artist = row.artist == undefined ? '' : row.artist;
+        this.artist = this.artist.trim() == '' ? 'Unknown album artist' : this.artist;
         this.genre = row.genre;
         return this;
     }

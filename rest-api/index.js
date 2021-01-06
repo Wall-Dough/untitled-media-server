@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const util = require('../util');
 const EOL = require('os').EOL;
+const webInterface = require('../web-interface')
 
 const app = express();
 const port = 4041;
@@ -18,32 +19,43 @@ const createPLS = (hostname, ids) => {
 }
 
 app.get('/', (req, res) => {
+    webInterface.getHomepage().then((homepage) => {
+        res.send(homepage);
+    }).catch((err) => {
+        res.send(err);
+    });
 });
 
-app.get('/artist', (req, res) => {
+app.get('/artists', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/artist/:artist', (req, res) => {
+app.get('/artists/:artist', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/album', (req, res) => {
+app.get('/albums', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/album/:album', (req, res) => {
-
+app.get('/albums/:album', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/playlist', (req, res) => {
+app.get('/playlists', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/playlist/:playlist', (req, res) => {
+app.get('/playlists/:playlist', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/song/', (req, res) => {
-
+app.get('/songs/', (req, res) => {
+    res.sendStatus(404);
 });
 
-app.get('/song/:songId', (req, res) => {
+app.get('/songs/:songId', (req, res) => {
+    res.sendStatus(404);
 });
 
 app.listen(port, () => {
