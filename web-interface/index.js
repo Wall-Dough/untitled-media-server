@@ -5,6 +5,13 @@
 const EOL = require('os').EOL;
 const manager = require('../manager');
 
+/**
+ * @function getHomepage
+ * @memberof webInterface
+ * 
+ * Obtains the string representation of the homepage
+ * @returns a Promise that resolves with the string representation of the homepage
+ */
 const getHomepage = () => {
     return new Promise((resolve, reject) => {
         manager.getAllSongs().then((songs) => {
