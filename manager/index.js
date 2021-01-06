@@ -8,7 +8,11 @@ const getAlbumFromMetadata = (metadata) => {
             if (album == undefined) {
                 album = new dataObject.Album().fromMetadata(metadata);
                 dataAccess.addAlbum(album).then(() => {
-                    resolve(album);
+                    dataAccess.getAlbumByTitle(metadata.common.album).then((album) => {
+                        resolve(album);
+                    }).catch((err) => {
+                        reject(err);
+                    });
                 }).catch((err) => {
                     reject(err);
                 });

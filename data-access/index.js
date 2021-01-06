@@ -26,15 +26,15 @@ const insertBlankSong = () => {
 const createSongTable = () => {
     return new Promise((resolve, reject) => {
         db.run(`create table SONGS (
-            song_id int,
-            file_path varchar(255),
-            title varchar(255),
-            artist varchar(255),
-            album_id int,
-            disc int,
-            track int,
-            year int,
-            genre varchar(255));`, (err) => {
+            song_id INTEGER PRIMARY KEY,
+            file_path TEXT,
+            title TEXT,
+            artist TEXT,
+            album_id INTEGER,
+            disc INTEGER,
+            track INTEGER,
+            year INTEGER,
+            genre TEXT);`, (err) => {
                 if (err) {
                     console.log('Create song failed');
                     reject(err);
@@ -68,11 +68,11 @@ const insertBlankAlbum = () => {
 const createAlbumTable = () => {
     return new Promise((resolve, reject) => {
         db.run(`create table ALBUMS (
-            album_id int,
-            title varchar(255),
-            artist varchar(255),
-            year int,
-            genre varchar(255)
+            album_id INTEGER PRIMARY KEY,
+            title TEXT,
+            artist TEXT,
+            year INTEGER,
+            genre TEXT
             );`, (err) => {
                 if (err) {
                     console.log('Create album failed');
@@ -107,9 +107,8 @@ const getAlbumByTitle = (title) => {
 
 const addAlbum = (album) => {
     return new Promise((resolve, reject) => {
-        album.id = ++idSeq;
-        db.run(`insert into ALBUMS (album_id, title, artist, year, genre)
-        values (${album.id}, '${album.title}', '${album.artist}', ${album.year}, '${album.genre}');`, (err) => {
+        db.run(`insert into ALBUMS (title, artist, year, genre)
+        values ('${album.title}', '${album.artist}', ${album.year}, '${album.genre}');`, (err) => {
             if (err) {
                 console.log('Add album failed');
                 reject(err);
@@ -123,9 +122,8 @@ const addAlbum = (album) => {
 
 const addSong = (song) => {
     return new Promise((resolve, reject) => {
-        song.id = ++idSeq;
-        db.run(`insert into SONGS (song_id, file_path, title, artist, album_id, disc, track, year, genre)
-        values (${song.id}, '${song.filePath}', '${song.title}', '${song.artist}', ${song.albumId}, 
+        db.run(`insert into SONGS (file_path, title, artist, album_id, disc, track, year, genre)
+        values ('${song.filePath}', '${song.title}', '${song.artist}', ${song.albumId}, 
         ${song.discNumber}, ${song.trackNumber}, ${song.year}, '${song.genre}');`, (err) => {
             if (err) {
                 console.log('Add song failed');
