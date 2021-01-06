@@ -66,6 +66,17 @@ const getAllSongs = () => {
 const getSongById = (id) => {
     return dataAccess.getSongById(id);
 };
+/**
+ * @function getSongsByAlbumId
+ * @memberof dataAccess
+ * 
+ * Gets all songs in an album
+ * @param {number} id the album ID to retrieve the songs for
+ * @returns a Promise that resolves with an array of the songs in the album
+ */
+const getSongsByAlbumId = (id) => {
+    return dataAccess.getSongsByAlbumId(id);
+};
 
 /**
  * @see {@link dataAccess.getAllAlbums}
@@ -77,4 +88,5 @@ const getAllAlbums = () => {
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
+module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getAllAlbums = getAllAlbums;

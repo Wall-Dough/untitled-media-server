@@ -31,8 +31,18 @@ app.get('/albums', (req, res) => {
     res.sendStatus(404);
 });
 
-app.get('/albums/:album', (req, res) => {
-    res.sendStatus(404);
+app.get('/albums/:albumId', (req, res) => {
+    manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
+        const songIds = songs.map((song) => {
+            return song.id;
+        });
+        const playlist = util.createPLS(`${req.hostname}:${port}`, songIds);
+        res.type(PLS_MIME_TYPE);
+        res.send(playlist);
+    }).catch((err) => {
+        console.log('Get album by ID request failed');
+        res.send(err);
+    });
 });
 
 app.get('/playlists', (req, res) => {

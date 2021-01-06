@@ -185,6 +185,33 @@ const getSongById = (id) => {
 };
 
 /**
+ * @function getSongsByAlbumId
+ * @memberof dataAccess
+ * 
+ * Gets all songs in an album
+ * @param {number} id the album ID to retrieve the songs for
+ * @returns a Promise that resolves with an array of the songs in the album
+ */
+const getSongsByAlbumId = (id) => {
+    return new Promise((resolve, reject) => {
+        db.all(`${SONG_SELECT}
+        and s.album_id = ${id};`, (err, rows) => {
+            if (err) {
+                console.log('Get songs by album id failed');
+                reject(err);
+            } else {
+                console.log('Got songs by album id');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Song().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+/**
  * @function getAllAlbums
  * @memberof dataAccess
  *
@@ -222,6 +249,7 @@ const init = async () => {
 module.exports.addSong = addSong;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
+module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.addAlbum = addAlbum;
 module.exports.getAllAlbums = getAllAlbums;
