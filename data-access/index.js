@@ -195,7 +195,8 @@ const getSongById = (id) => {
 const getSongsByAlbumId = (id) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
-        and s.album_id = ${id};`, (err, rows) => {
+        and s.album_id = ${id}
+        and s.song_id > 0;`, (err, rows) => {
             if (err) {
                 console.log('Get songs by album id failed');
                 reject(err);
