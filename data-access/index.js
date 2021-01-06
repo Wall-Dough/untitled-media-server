@@ -91,6 +91,7 @@ const createAlbumTable = () => {
 
 const getAlbumByTitle = (title) => {
     return new Promise((resolve, reject) => {
+        title = title == undefined ? '' : title.trim();
         db.get(`select * from ALBUMS
             where title = '${title}';`, (err, row) => {
                 if (err) {

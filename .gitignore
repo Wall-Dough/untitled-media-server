@@ -1,2 +1,5 @@
+.DS_Store
 node_modules
 package-lock.json
+# TODO: remove this at some point
+test-audio
