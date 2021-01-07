@@ -11,6 +11,16 @@ const port = 4041;
 //  recognized by the MIME type library that express uses
 const PLS_MIME_TYPE = 'application/pls+xml';
 
+const sendPlaylist = (req, res, songs) => {
+    console.log(songs);
+    const songIds = songs.map((song) => {
+        return song.id;
+    });
+    const playlist = util.createPLS(`${req.hostname}:${port}`, songIds);
+    res.type(PLS_MIME_TYPE);
+    res.send(playlist);
+};
+
 app.get('/', (req, res) => {
     webInterface.getHomepage().then((homepage) => {
         res.send(homepage);
@@ -49,14 +59,18 @@ app.get('/albums/:albumId', (req, res) => {
     });
 });
 
+app.get('/albums/:albumId/songs', (req, res) => {
+    manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get album by ID request failed');
+        res.send(err);
+    });
+});
+
 app.get('/albums/:albumId/stream', (req, res) => {
     manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
-        const songIds = songs.map((song) => {
-            return song.id;
-        });
-        const playlist = util.createPLS(`${req.hostname}:${port}`, songIds);
-        res.type(PLS_MIME_TYPE);
-        res.send(playlist);
+        sendPlaylist(req, res, songs);
     }).catch((err) => {
         console.log('Get album by ID request failed');
         res.send(err);
@@ -64,15 +78,57 @@ app.get('/albums/:albumId/stream', (req, res) => {
 });
 
 app.get('/playlists', (req, res) => {
-    res.sendStatus(404);
+    manager.getAllPlaylists().then((playlists) => {
+        res.send(playlists);
+    }).catch((err) => {
+        console.log('Get all playlists request failed');
+        res.send(err);
+    });
 });
 
-app.get('/playlists/:playlist', (req, res) => {
-    res.sendStatus(404);
+app.put('/playlists', (req, res) => {
+    manager.addPlaylist(req.query.name).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add playlist request failed');
+        res.send(err);
+    });;
 });
 
-app.get('/playlists/:playlist/stream', (req, res) => {
-    res.sendStatus(404);
+app.get('/playlists/:playlistId', (req, res) => {
+    manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get playlist by ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/playlists/:playlistId/songs', (req, res) => {
+    manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get playlist by ID request failed');
+        res.send(err);
+    });
+});
+
+app.put('/playlists/:playlistId/songs/:songId', (req, res) => {
+    manager.addSongToPlaylist(Number(req.params.playlistId), Number(req.params.songId)).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add song to playlist request failed');
+        res.send(err);
+    });
+});
+
+app.get('/playlists/:playlistId/stream', (req, res) => {
+    manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
+        sendPlaylist(req, res, songs);
+    }).catch((err) => {
+        console.log('Get playlist by ID request failed');
+        res.send(err);
+    });
 });
 
 app.get('/songs/', (req, res) => {
@@ -95,9 +151,7 @@ app.get('/songs/:songId', (req, res) => {
 
 app.get('/songs/:songId/stream', (req, res) => {
     manager.getSongById(Number(req.params.songId)).then((song) => {
-        const playlist = util.createPLS(`${req.hostname}:${port}`, [song.id]);
-        res.type(PLS_MIME_TYPE);
-        res.send(playlist);
+        sendPlaylist(req, res, [song]);
     }).catch((err) => {
         console.log('Get song by ID request failed');
         res.send(err);
