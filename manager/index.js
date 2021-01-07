@@ -5,7 +5,9 @@
 const dataAccess = require('../data-access');
 const dataObject = require('../data-object');
 const util = require('../util');
+const config = require('../config');
 const mm = require('music-metadata');
+const fs = require('fs');
 
 const getAlbumFromMetadata = (metadata) => {
     return new Promise((resolve, reject) => {
@@ -134,6 +136,40 @@ const getSongsByPlaylistId = (id) => {
     return dataAccess.getSongsByPlaylistId(id);
 };
 
+const supportedFileTypes = ['.mp3', '.m4a'];
+const isSupported = (file) => {
+    for (let supportedFileType of supportedFileTypes) {
+        if (file.endsWith(supportedFileType)) {
+            return true;
+        }
+    }
+    return false;
+}
+const scanFoldersForMediaFiles = () => {
+    return new Promise((resolve, reject) => {
+        const promises = [];
+        const folders = config.getFolders();
+        for (let folder of folders) {
+            const dir = fs.opendirSync(folder.path);
+            while (true) {
+                const dirent = dir.readSync();
+                if (dirent == null) {
+                    break;
+                }
+                if (dirent.isFile()) {
+                    if (isSupported(dirent.name)) {
+                        promises.push(addSongFromPath(`${folder.path}/${dirent.name}`));
+                    }
+                }
+            }
+            dir.closeSync();
+        }
+        Promise.allSettled(promises).then(() => {
+            resolve();
+        });
+    });
+};
+
 
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
@@ -144,3 +180,4 @@ module.exports.addPlaylist = addPlaylist;
 module.exports.getAllPlaylists = getAllPlaylists;
 module.exports.addSongToPlaylist = addSongToPlaylist;
 module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
+module.exports.scanFoldersForMediaFiles = scanFoldersForMediaFiles;
