@@ -27,11 +27,29 @@ app.get('/artists/:artist', (req, res) => {
     res.sendStatus(404);
 });
 
-app.get('/albums', (req, res) => {
+app.get('/artists/:artist/stream', (req, res) => {
     res.sendStatus(404);
 });
 
+app.get('/albums', (req, res) => {
+    manager.getAllAlbums().then((albums) => {
+        res.send(albums);
+    }).catch((err) => {
+        console.log('Get all albums request failed');
+        res.send(err);
+    });
+});
+
 app.get('/albums/:albumId', (req, res) => {
+    manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get album by ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/albums/:albumId/stream', (req, res) => {
     manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
         const songIds = songs.map((song) => {
             return song.id;
@@ -53,11 +71,29 @@ app.get('/playlists/:playlist', (req, res) => {
     res.sendStatus(404);
 });
 
-app.get('/songs/', (req, res) => {
+app.get('/playlists/:playlist/stream', (req, res) => {
     res.sendStatus(404);
 });
 
+app.get('/songs/', (req, res) => {
+    manager.getAllSongs().then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get all songs request failed');
+        res.send(err);
+    });
+});
+
 app.get('/songs/:songId', (req, res) => {
+    manager.getSongById(Number(req.params.songId)).then((song) => {
+        res.send(song);
+    }).catch((err) => {
+        console.log('Get song by ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/songs/:songId/stream', (req, res) => {
     manager.getSongById(Number(req.params.songId)).then((song) => {
         const playlist = util.createPLS(`${req.hostname}:${port}`, [song.id]);
         res.type(PLS_MIME_TYPE);
