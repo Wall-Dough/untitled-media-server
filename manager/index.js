@@ -86,8 +86,30 @@ const getAllAlbums = () => {
     return dataAccess.getAllAlbums();
 }
 
+const addPlaylist = (playlistName) => {
+    return dataAccess.addPlaylist(playlistName);
+};
+
+const getAllPlaylists = () => {
+    return dataAccess.getAllPlaylists();
+};
+
+const addSongToPlaylist = (playlistId, songId) => {
+    return dataAccess.addSongToPlaylist(playlistId, songId);
+}
+
+const getSongsByPlaylistId = (id) => {
+    return dataAccess.getSongsByPlaylistId(id);
+};
+
+
+
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
 module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getAllAlbums = getAllAlbums;
+module.exports.addPlaylist = addPlaylist;
+module.exports.getAllPlaylists = getAllPlaylists;
+module.exports.addSongToPlaylist = addSongToPlaylist;
+module.exports.getSongsByPlaylistId = getSongsByPlaylistId;

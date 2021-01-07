@@ -49,6 +49,15 @@ app.get('/albums/:albumId', (req, res) => {
     });
 });
 
+app.get('/albums/:albumId/songs', (req, res) => {
+    manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get album by ID request failed');
+        res.send(err);
+    });
+});
+
 app.get('/albums/:albumId/stream', (req, res) => {
     manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
         const songIds = songs.map((song) => {
@@ -64,11 +73,48 @@ app.get('/albums/:albumId/stream', (req, res) => {
 });
 
 app.get('/playlists', (req, res) => {
-    res.sendStatus(404);
+    manager.getAllPlaylists().then((playlists) => {
+        res.send(playlists);
+    }).catch((err) => {
+        console.log('Get all playlists request failed');
+        res.send(err);
+    });
 });
 
-app.get('/playlists/:playlist', (req, res) => {
-    res.sendStatus(404);
+app.put('/playlists', (req, res) => {
+    manager.addPlaylist(req.query.name).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add playlist request failed');
+        res.send(err);
+    });;
+});
+
+app.get('/playlists/:playlistId', (req, res) => {
+    manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get playlist by ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/playlists/:playlistId/songs', (req, res) => {
+    manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get playlist by ID request failed');
+        res.send(err);
+    });
+});
+
+app.put('/playlists/:playlistId/songs/:songId', (req, res) => {
+    manager.addSongToPlaylist(Number(req.params.playlistId), Number(req.params.songId)).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add song to playlist request failed');
+        res.send(err);
+    });
 });
 
 app.get('/playlists/:playlist/stream', (req, res) => {

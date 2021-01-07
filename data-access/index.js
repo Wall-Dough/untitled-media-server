@@ -6,7 +6,14 @@ const sqlite3 = require('sqlite3');
 const dataObject = require('../data-object');
 
 const db = new sqlite3.Database(':memory:');
-let idSeq = 0;
+
+const SONG_SELECT_PART = `select s.song_id, s.file_path, s.title, s.artist, 
+s.album_id, s.disc, s.track, s.year, s.genre, 
+a.title as album
+from SONGS s,
+ALBUMS a`;
+const SONG_SELECT = `${SONG_SELECT_PART}
+where a.album_id = s.album_id`;
 
 const insertBlankSong = () => {
     return new Promise((resolve, reject) => {
@@ -89,6 +96,179 @@ const createAlbumTable = () => {
     });
 };
 
+const insertBlankGroup = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into GROUPS (group_id, name, type_cd)
+        values (0, '', 0)`, (err) => {
+            if (err) {
+                console.log('Insert blank group failed');
+                reject(err);
+            } else {
+                console.log('Inserted blank group');
+                resolve();
+            }
+        })
+    });
+};
+
+const createGroupsTable = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`create table GROUPS (
+            group_id INTEGER PRIMARY KEY,
+            name TEXT,
+            type_cd INTEGER
+            );`, (err) => {
+                if (err) {
+                    console.log('Create groups table failed');
+                    reject(err);
+                } else {
+                    console.log('Created groups table');
+                    insertBlankGroup().then(() => {
+                        resolve();
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                }
+            });
+    });
+};
+
+const insertBlankGroupsSongsRow = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into GROUPS_SONGS (group_id, song_id)
+        values (0, 0)`, (err) => {
+            if (err) {
+                console.log('Insert blank groups songs row failed');
+                reject(err);
+            } else {
+                console.log('Inserted blank groups songs row');
+                resolve();
+            }
+        })
+    });
+};
+
+const createGroupsSongsTable = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`create table GROUPS_SONGS (
+            group_id INTEGER,
+            song_id INTEGER
+            );`, (err) => {
+                if (err) {
+                    console.log('Create groups and songs table failed');
+                    reject(err);
+                } else {
+                    console.log('Created groups and songs table');
+                    insertBlankGroupsSongsRow().then(() => {
+                        resolve();
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                }
+            });
+    });
+};
+
+const addGroup = (groupName, typeCode) => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into GROUPS (name, type_cd)
+        values ('${groupName}', ${typeCode});`, (err) => {
+            if (err) {
+                console.log('Add group failed');
+                reject(err);
+            } else {
+                console.log('Added group');
+                resolve();
+            }
+        });
+    });
+};
+
+const PLAYLIST_TYPE_CD = 1;
+
+const addPlaylist = (playlistName) => {
+    return addGroup(playlistName, PLAYLIST_TYPE_CD);
+};
+
+const getAllGroupsByTypeCd = (typeCd) => {
+    return new Promise((resolve, reject) => {
+        db.all(`select *
+        from GROUPS
+        where type_cd = ${typeCd};`, (err, rows) => {
+            if (err) {
+                console.log('Get groups by type cd failed');
+                reject(err);
+            } else {
+                console.log('Got groups by type cd');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Group().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+const getAllPlaylists = () => {
+    return new Promise((resolve, reject) => {
+        getAllGroupsByTypeCd(PLAYLIST_TYPE_CD).then((groups) => {
+            const playlists = groups.map((group) => {
+                return new dataObject.Playlist().fromGroup(group);
+            });
+            resolve(playlists);
+        }).catch((err) => {
+            reject(err);
+        });
+    });
+};
+
+const getSongsByGroupId = (groupId) => {
+    return new Promise((resolve, reject) => {
+        db.all(`${SONG_SELECT_PART},
+        GROUPS_SONGS gs
+        where gs.group_id = ${groupId}
+        and s.song_id = gs.song_id
+        and s.album_id = a.album_id
+        and s.song_id > 0;`, (err, rows) => {
+            if (err) {
+                console.log('Get songs by group id failed');
+                reject(err);
+            } else {
+                console.log('Got songs by group id');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Song().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+const getSongsByPlaylistId = (playlistId) => {
+    return getSongsByGroupId(playlistId);
+};
+
+const addSongToGroup = (groupId, songId) => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into GROUPS_SONGS (group_id, song_id)
+        values (${groupId}, ${songId});`, (err) => {
+            if (err) {
+                console.log('Add song to group failed');
+                reject(err);
+            } else {
+                console.log('Added song to group');
+                resolve();
+            }
+        });
+    });
+};
+
+const addSongToPlaylist = (playlistId, songId) => {
+    return addSongToGroup(playlistId, songId);
+};
+
 const getAlbumByTitle = (title) => {
     return new Promise((resolve, reject) => {
         title = title == undefined ? '' : title.trim();
@@ -135,13 +315,6 @@ const addSong = (song) => {
         });
     });
 };
-
-const SONG_SELECT = `select s.song_id, s.file_path, s.title, s.artist, 
-s.album_id, s.disc, s.track, s.year, s.genre, 
-a.title as album
-from SONGS s,
-ALBUMS a
-where a.album_id = s.album_id`;
 
 const getAllSongs = () => {
     return new Promise((resolve, reject) => {
@@ -237,14 +410,14 @@ const getAllAlbums = () => {
     });
 };
 
-const init = async () => {
+const init = () => {
     const promises = [];
     promises.push(createSongTable());
     promises.push(createAlbumTable());
+    promises.push(createGroupsTable());
+    promises.push(createGroupsSongsTable());
 
-    for (let promise of promises) {
-        await promise;
-    }
+    return Promise.allSettled(promises);
 };
 
 module.exports.addSong = addSong;
@@ -254,5 +427,8 @@ module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.addAlbum = addAlbum;
 module.exports.getAllAlbums = getAllAlbums;
-
-init();
+module.exports.addPlaylist = addPlaylist;
+module.exports.getAllPlaylists = getAllPlaylists;
+module.exports.addSongToPlaylist = addSongToPlaylist;
+module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
+module.exports.init = init;
