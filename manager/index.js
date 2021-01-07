@@ -34,12 +34,20 @@ const getAlbumFromMetadata = (metadata) => {
 
 const addSongFromPath = (path) => {
     return new Promise((resolve, reject) => {
-        mm.parseFile(path).then((metadata) => {
-            getAlbumFromMetadata(metadata).then((album) => {
-                const song = new dataObject.Song(path).fromMetadata(metadata);
-                song.albumId = album.id;
-                dataAccess.addSong(song).then(() => {
-                    resolve();
+        dataAccess.getSongByPath(path).then((row) => {
+            if (row != undefined) {
+                resolve();
+                return;
+            }
+            mm.parseFile(path).then((metadata) => {
+                getAlbumFromMetadata(metadata).then((album) => {
+                    const song = new dataObject.Song(path).fromMetadata(metadata);
+                    song.albumId = album.id;
+                    dataAccess.addSong(song).then(() => {
+                        resolve();
+                    }).catch((err) => {
+                        reject(err);
+                    });
                 }).catch((err) => {
                     reject(err);
                 });

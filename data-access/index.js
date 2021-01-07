@@ -389,6 +389,20 @@ const getSongById = (id) => {
     });
 };
 
+const getSongByPath = (path) => {
+    return new Promise((resolve, reject) => {
+        db.get(`select * from SONGS where file_path = '${path}';`, (err, row) => {
+            if (err) {
+                console.log('Get song by path failed');
+                reject(err);
+            } else {
+                console.log('Got song by path');
+                resolve(row);
+            }
+        });
+    });
+};
+
 /**
  * @function getSongsByAlbumId
  * @memberof dataAccess
@@ -455,6 +469,7 @@ const init = () => {
 module.exports.addSong = addSong;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
+module.exports.getSongByPath = getSongByPath;
 module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.addAlbum = addAlbum;
