@@ -69,7 +69,7 @@ const getSongById = (id) => {
 
 /**
  * @function getSongsByAlbumId
- * @memberof dataAccess
+ * @memberof manager
  * 
  * Gets all songs in an album
  * @param {number} id the album ID to retrieve the songs for
@@ -86,22 +86,53 @@ const getAllAlbums = () => {
     return dataAccess.getAllAlbums();
 }
 
+/**
+ * @function addPlaylist
+ * @memberof manager
+ * 
+ * Adds a new empty playlist to the database
+ * @param {string} playlistName the name of the playlist to add
+ * @returns a Promise that resolves when the playlist has been added
+ */
 const addPlaylist = (playlistName) => {
     return dataAccess.addPlaylist(playlistName);
 };
 
+/**
+ * @function getAllPlaylists
+ * @memberof manager
+ * 
+ * Gets all the playlists in the database
+ * @returns a Promise that resolves with an array of all playlists
+ */
 const getAllPlaylists = () => {
     return dataAccess.getAllPlaylists();
 };
 
+/**
+ * @function addSongToPlaylist
+ * @memberof manager
+ * 
+ * Adds the song to the playlist
+ * @param {number} playlistId the ID of the playlist to add the song to
+ * @param {number} songId the ID of the song to add to the playlist
+ * @returns a Promise that resolves when the song has been added to the playlist
+ */
 const addSongToPlaylist = (playlistId, songId) => {
     return dataAccess.addSongToPlaylist(playlistId, songId);
 }
 
+/**
+ * @function getSongsByPlaylistId
+ * @memberof manager
+ * 
+ * Gets all the songs in the playlist
+ * @param {number} id the ID of the playlist to retrieve songs for
+ * @returns a Promise that resolves with an array of the songs in the playlist
+ */
 const getSongsByPlaylistId = (id) => {
     return dataAccess.getSongsByPlaylistId(id);
 };
-
 
 
 module.exports.addSongFromPath = addSongFromPath;

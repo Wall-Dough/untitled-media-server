@@ -186,6 +186,14 @@ const addGroup = (groupName, typeCode) => {
 
 const PLAYLIST_TYPE_CD = 1;
 
+/**
+ * @function addPlaylist
+ * @memberof dataAccess
+ * 
+ * Adds a new empty playlist to the database
+ * @param {string} playlistName the name of the playlist to add
+ * @returns a Promise that resolves when the playlist has been added
+ */
 const addPlaylist = (playlistName) => {
     return addGroup(playlistName, PLAYLIST_TYPE_CD);
 };
@@ -210,6 +218,13 @@ const getAllGroupsByTypeCd = (typeCd) => {
     });
 };
 
+/**
+ * @function getAllPlaylists
+ * @memberof dataAccess
+ * 
+ * Gets all the playlists in the database
+ * @returns a Promise that resolves with an array of all playlists
+ */
 const getAllPlaylists = () => {
     return new Promise((resolve, reject) => {
         getAllGroupsByTypeCd(PLAYLIST_TYPE_CD).then((groups) => {
@@ -246,6 +261,14 @@ const getSongsByGroupId = (groupId) => {
     });
 };
 
+/**
+ * @function getSongsByPlaylistId
+ * @memberof dataAccess
+ * 
+ * Gets all the songs in the playlist
+ * @param {number} id the ID of the playlist to retrieve songs for
+ * @returns a Promise that resolves with an array of the songs in the playlist
+ */
 const getSongsByPlaylistId = (playlistId) => {
     return getSongsByGroupId(playlistId);
 };
@@ -265,6 +288,15 @@ const addSongToGroup = (groupId, songId) => {
     });
 };
 
+/**
+ * @function addSongToPlaylist
+ * @memberof dataAccess
+ * 
+ * Adds the song to the playlist
+ * @param {number} playlistId the ID of the playlist to add the song to
+ * @param {number} songId the ID of the song to add to the playlist
+ * @returns a Promise that resolves when the song has been added to the playlist
+ */
 const addSongToPlaylist = (playlistId, songId) => {
     return addSongToGroup(playlistId, songId);
 };
