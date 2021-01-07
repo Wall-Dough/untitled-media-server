@@ -167,6 +167,15 @@ app.get('/songs/:songId/file', (req, res) => {
     });
 });
 
+app.post('/folders', (req, res) => {
+    manager.scanFoldersForMediaFiles().then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Scan folders for media files request failed');
+        res.send(err);
+    });
+});
+
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
