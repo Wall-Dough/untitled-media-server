@@ -210,7 +210,10 @@ const createGroupsSongsTable = () => {
 const addGroup = (groupName, typeCode) => {
     return new Promise((resolve, reject) => {
         db.run(`insert into GROUPS (name, type_cd)
-        values ('${groupName}', ${typeCode});`, (err) => {
+        values ($name, $typeCd);`, {
+            $name: groupName,
+            $typeCd: typeCode
+        }, (err) => {
             if (err) {
                 console.log('Add group failed');
                 reject(err);
@@ -240,7 +243,9 @@ const getAllGroupsByTypeCd = (typeCd) => {
     return new Promise((resolve, reject) => {
         db.all(`select *
         from GROUPS
-        where type_cd = ${typeCd};`, (err, rows) => {
+        where type_cd = $typeCd;`, {
+            $typeCd: typeCd
+        }, (err, rows) => {
             if (err) {
                 console.log('Get groups by type cd failed');
                 reject(err);
@@ -280,10 +285,12 @@ const getSongsByGroupId = (groupId) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT_PART},
         GROUPS_SONGS gs
-        where gs.group_id = ${groupId}
+        where gs.group_id = $groupId
         and s.song_id = gs.song_id
         and s.album_id = a.album_id
-        and s.song_id > 0;`, (err, rows) => {
+        and s.song_id > 0;`, {
+            $groupId: groupId
+        }, (err, rows) => {
             if (err) {
                 console.log('Get songs by group id failed');
                 reject(err);
@@ -314,7 +321,10 @@ const getSongsByPlaylistId = (playlistId) => {
 const addSongToGroup = (groupId, songId) => {
     return new Promise((resolve, reject) => {
         db.run(`insert into GROUPS_SONGS (group_id, song_id)
-        values (${groupId}, ${songId});`, (err) => {
+        values ($groupId, $songId);`, {
+            $groupId: groupId,
+            $songId: songId
+        }, (err) => {
             if (err) {
                 console.log('Add song to group failed');
                 reject(err);
@@ -343,7 +353,9 @@ const getAlbumByTitle = (title) => {
     return new Promise((resolve, reject) => {
         title = title == undefined ? '' : title.trim();
         db.get(`select * from ALBUMS
-            where title = '${title}';`, (err, row) => {
+            where title = $title;`, {
+                $title: title
+            }, (err, row) => {
                 if (err) {
                     console.log('Get album by title failed');
                     reject(err);
@@ -358,9 +370,10 @@ const getAlbumByTitle = (title) => {
 const addAlbum = (album) => {
     return new Promise((resolve, reject) => {
         db.run(`insert into ALBUMS (title, artist, year, genre)
-        values ('${album.title}', '${album.artist}', ${album.year}, '${album.genre}');`, (err) => {
+        values ($title, $artist, $year, $genre);`, album.toDB(), (err) => {
             if (err) {
                 console.log('Add album failed');
+                console.log(err);
                 reject(err);
             } else {
                 console.log('Added album');
@@ -374,7 +387,9 @@ const getArtistByName = (artistName) => {
     return new Promise((resolve, reject) => {
         artistName = artistName == undefined ? '' : artistName.trim();
         db.get(`select * from ARTISTS
-            where name = '${artistName}';`, (err, row) => {
+            where name = $artistName;`, {
+                $artistName: artistName
+            }, (err, row) => {
                 if (err) {
                     console.log('Get artist by name failed');
                     reject(err);
@@ -389,7 +404,9 @@ const getArtistByName = (artistName) => {
 const getArtistById = (artistId) => {
     return new Promise((resolve, reject) => {
         db.get(`select * from ARTISTS
-            where artist_id = ${artistId};`, (err, row) => {
+            where artist_id = $artistId;`, {
+                $artistId: artistId
+            }, (err, row) => {
                 if (err) {
                     console.log('Get artist by ID failed');
                     reject(err);
@@ -404,7 +421,7 @@ const getArtistById = (artistId) => {
 const addArtist = (artist) => {
     return new Promise((resolve, reject) => {
         db.run(`insert into ARTISTS (name)
-        values ('${artist.name}');`, (err) => {
+        values ($name);`, artist.toDB(), (err) => {
             if (err) {
                 console.log('Add artist failed');
                 reject(err);
@@ -419,8 +436,8 @@ const addArtist = (artist) => {
 const addSong = (song) => {
     return new Promise((resolve, reject) => {
         db.run(`insert into SONGS (file_path, title, artist_id, album_id, disc, track, year, genre)
-        values ('${song.filePath}', '${song.title}', '${song.artistId}', ${song.albumId}, 
-        ${song.discNumber}, ${song.trackNumber}, ${song.year}, '${song.genre}');`, (err) => {
+        values ($filePath, $title, $artistId, $albumId, $discNumber, $trackNumber, $year, $genre);`,
+        song.toDB(), (err) => {
             if (err) {
                 console.log('Add song failed');
                 reject(err);
@@ -461,7 +478,9 @@ const getAllSongs = () => {
 const getSongById = (id) => {
     return new Promise((resolve, reject) => {
         db.get(`${SONG_SELECT}
-        and s.song_id = ${id};`, (err, row) => {
+        and s.song_id = $songId;`, {
+            $songId: id
+        }, (err, row) => {
             if (err) {
                 console.log('Get song by id failed');
                 reject(err);
@@ -475,7 +494,9 @@ const getSongById = (id) => {
 
 const getSongByPath = (path) => {
     return new Promise((resolve, reject) => {
-        db.get(`select * from SONGS where file_path = '${path}';`, (err, row) => {
+        db.get(`select * from SONGS where file_path = $path;`, {
+            $path: path
+        }, (err, row) => {
             if (err) {
                 console.log('Get song by path failed');
                 reject(err);
@@ -498,8 +519,10 @@ const getSongByPath = (path) => {
 const getSongsByAlbumId = (id) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
-        and s.album_id = ${id}
-        and s.song_id > 0;`, (err, rows) => {
+        and s.album_id = $albumId
+        and s.song_id > 0;`, {
+            $albumId: id
+        }, (err, rows) => {
             if (err) {
                 console.log('Get songs by album id failed');
                 reject(err);
@@ -518,8 +541,10 @@ const getSongsByAlbumId = (id) => {
 const getSongsByArtistId = (id) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
-        and s.artist_id = ${id}
-        and s.song_id > 0;`, (err, rows) => {
+        and s.artist_id = $artistId
+        and s.song_id > 0;`, {
+            $artistId: id
+        }, (err, rows) => {
             if (err) {
                 console.log('Get songs by artist id failed');
                 reject(err);
@@ -584,9 +609,11 @@ const getAlbumsByArtistId = (id) => {
         db.all(`select distinct a.*
         from ALBUMS a,
         SONGS s
-        where s.artist_id = ${id}
+        where s.artist_id = $artistId
         and a.album_id = s.album_id
-        and s.song_id > 0;`, (err, rows) => {
+        and s.song_id > 0;`, {
+            $artistId: id
+        }, (err, rows) => {
             if (err) {
                 console.log('Get albums by artist failed');
                 reject(err);

@@ -22,6 +22,14 @@ class Album {
         this.genre = row.genre;
         return this;
     }
+    toDB() {
+        const db = {};
+        db.$title = this.title;
+        db.$year = this.year;
+        db.$artist = this.artist;
+        db.$genre = this.genre;
+        return db;
+    }
 };
 
 module.exports.Album = Album;

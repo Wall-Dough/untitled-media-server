@@ -9,6 +9,11 @@ class Artist {
         this.id = 0;
         return this;
     }
+    toDB() {
+        const db = {};
+        db.$name = this.name;
+        return db;
+    }
 };
 
 module.exports.Artist = Artist;
