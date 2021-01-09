@@ -32,6 +32,29 @@ const getAlbumFromMetadata = (metadata) => {
     });
 };
 
+const getArtistFromMetadata = (metadata) => {
+    return new Promise((resolve, reject) => {
+        dataAccess.getArtistByName(metadata.common.artist).then((artist) => {
+            if (artist == undefined) {
+                artist = new dataObject.Artist().fromMetadata(metadata);
+                dataAccess.addArtist(artist).then(() => {
+                    dataAccess.getArtistByName(metadata.common.artist).then((artist) => {
+                        resolve(artist);
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                }).catch((err) => {
+                    reject(err);
+                });
+            } else {
+                resolve(artist);
+            }
+        }).catch((err) => {
+            reject(err);
+        });
+    });
+};
+
 const addSongFromPath = (path) => {
     return new Promise((resolve, reject) => {
         dataAccess.getSongByPath(path).then((row) => {
@@ -41,10 +64,15 @@ const addSongFromPath = (path) => {
             }
             mm.parseFile(path).then((metadata) => {
                 getAlbumFromMetadata(metadata).then((album) => {
-                    const song = new dataObject.Song(path).fromMetadata(metadata);
-                    song.albumId = album.id;
-                    dataAccess.addSong(song).then(() => {
-                        resolve();
+                    getArtistFromMetadata(metadata).then((artist) => {
+                        const song = new dataObject.Song(path).fromMetadata(metadata);
+                        song.albumId = album.id;
+                        song.artistId = artist.id;
+                        dataAccess.addSong(song).then(() => {
+                            resolve();
+                        }).catch((err) => {
+                            reject(err);
+                        });
                     }).catch((err) => {
                         reject(err);
                     });
@@ -178,6 +206,22 @@ const scanFoldersForMediaFiles = () => {
     });
 };
 
+const getSongsByArtistId = (id) => {
+    return dataAccess.getSongsByArtistId(id);
+};
+
+const getAlbumsByArtistId = (id) => {
+    return dataAccess.getAlbumsByArtistId(id);
+};
+
+const getArtistById = (id) => {
+    return dataAccess.getArtistById(id);
+};
+
+const getAllArtists = () => {
+    return dataAccess.getAllArtists();
+};
+
 
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
@@ -189,3 +233,7 @@ module.exports.getAllPlaylists = getAllPlaylists;
 module.exports.addSongToPlaylist = addSongToPlaylist;
 module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
 module.exports.scanFoldersForMediaFiles = scanFoldersForMediaFiles;
+module.exports.getArtistById = getArtistById;
+module.exports.getSongsByArtistId = getSongsByArtistId;
+module.exports.getAlbumsByArtistId = getAlbumsByArtistId;
+module.exports.getAllArtists = getAllArtists;

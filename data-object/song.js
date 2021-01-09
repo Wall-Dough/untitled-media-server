@@ -23,6 +23,7 @@ class Song {
         this.title = this.title.trim() == '' ? 'Untitled song' : this.title;
         this.artist = row.artist == undefined ? '' : row.artist;
         this.artist = this.artist.trim() == '' ? 'Unknown artist' : this.artist;
+        this.artistId = row.artist_id;
         this.album = row.album == undefined ? '' : row.album;
         this.album - this.album.trim() == '' ? 'Unknown album' : this.album;
         this.albumId = row.album_id;
