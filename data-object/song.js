@@ -34,6 +34,18 @@ class Song {
         this.filePath = row.file_path;
         return this;
     }
+    toDB() {
+        const db = {};
+        db.$title = this.title;
+        db.$artistId = this.artistId;
+        db.$albumId = this.albumId;
+        db.$discNumber = this.discNumber;
+        db.$trackNumber = this.trackNumber;
+        db.$year = this.year;
+        db.$genre = this.genre;
+        db.$filePath = this.filePath;
+        return db;
+    }
 };
 
 module.exports.Song = Song;
