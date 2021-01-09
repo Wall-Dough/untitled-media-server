@@ -7,18 +7,20 @@ const dataObject = require('../data-object');
 
 const db = new sqlite3.Database(':memory:');
 
-const SONG_SELECT_PART = `select s.song_id, s.file_path, s.title, s.artist, 
+const SONG_SELECT_PART = `select s.song_id, s.file_path, s.title, s.artist_id, 
 s.album_id, s.disc, s.track, s.year, s.genre, 
-a.title as album
+a.title as album, art.name as artist
 from SONGS s,
-ALBUMS a`;
+ALBUMS a,
+ARTISTS art`;
 const SONG_SELECT = `${SONG_SELECT_PART}
-where a.album_id = s.album_id`;
+where a.album_id = s.album_id
+and art.artist_id = s.artist_id`;
 
 const insertBlankSong = () => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into SONGS (song_id, file_path, title, artist, album_id, disc, track, year, genre)
-        values (0, '', '', '', 0, 0, 0, 0, '')`, (err) => {
+        db.run(`insert into SONGS (song_id, file_path, title, artist_id, album_id, disc, track, year, genre)
+        values (0, '', '', 0, 0, 0, 0, 0, '')`, (err) => {
             if (err) {
                 console.log('Insert blank song failed');
                 reject(err);
@@ -36,7 +38,7 @@ const createSongTable = () => {
             song_id INTEGER PRIMARY KEY,
             file_path TEXT,
             title TEXT,
-            artist TEXT,
+            artist_id INTEGER,
             album_id INTEGER,
             disc INTEGER,
             track INTEGER,
@@ -87,6 +89,42 @@ const createAlbumTable = () => {
                 } else {
                     console.log('Created album table');
                     insertBlankAlbum().then(() => {
+                        resolve();
+                    }).catch((err) => {
+                        reject(err);
+                    });
+                }
+            });
+    });
+};
+
+const insertBlankArtist = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into ARTISTS (artist_id, name)
+        values (0, '')`, (err) => {
+            if (err) {
+                console.log('Insert blank artist failed');
+                reject(err);
+            } else {
+                console.log('Inserted blank artist');
+                resolve();
+            }
+        })
+    });
+};
+
+const createArtistTable = () => {
+    return new Promise((resolve, reject) => {
+        db.run(`create table ARTISTS (
+            artist_id INTEGER PRIMARY KEY,
+            name TEXT
+            );`, (err) => {
+                if (err) {
+                    console.log('Create artist table failed');
+                    reject(err);
+                } else {
+                    console.log('Created artist table');
+                    insertBlankArtist().then(() => {
                         resolve();
                     }).catch((err) => {
                         reject(err);
@@ -332,10 +370,56 @@ const addAlbum = (album) => {
     });
 };
 
+const getArtistByName = (artistName) => {
+    return new Promise((resolve, reject) => {
+        artistName = artistName == undefined ? '' : artistName.trim();
+        db.get(`select * from ARTISTS
+            where name = '${artistName}';`, (err, row) => {
+                if (err) {
+                    console.log('Get artist by name failed');
+                    reject(err);
+                } else {
+                    console.log('Got the artist by name');
+                    resolve(row == undefined ? undefined : new dataObject.Artist().fromDB(row));
+                }
+            });
+    });
+};
+
+const getArtistById = (artistId) => {
+    return new Promise((resolve, reject) => {
+        db.get(`select * from ARTISTS
+            where artist_id = ${artistId};`, (err, row) => {
+                if (err) {
+                    console.log('Get artist by ID failed');
+                    reject(err);
+                } else {
+                    console.log('Got the artist by ID');
+                    resolve(row == undefined ? undefined : new dataObject.Artist().fromDB(row));
+                }
+            });
+    });
+};
+
+const addArtist = (artist) => {
+    return new Promise((resolve, reject) => {
+        db.run(`insert into ARTISTS (name)
+        values ('${artist.name}');`, (err) => {
+            if (err) {
+                console.log('Add artist failed');
+                reject(err);
+            } else {
+                console.log('Added artist');
+                resolve();
+            }
+        });
+    });
+};
+
 const addSong = (song) => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into SONGS (file_path, title, artist, album_id, disc, track, year, genre)
-        values ('${song.filePath}', '${song.title}', '${song.artist}', ${song.albumId}, 
+        db.run(`insert into SONGS (file_path, title, artist_id, album_id, disc, track, year, genre)
+        values ('${song.filePath}', '${song.title}', '${song.artistId}', ${song.albumId}, 
         ${song.discNumber}, ${song.trackNumber}, ${song.year}, '${song.genre}');`, (err) => {
             if (err) {
                 console.log('Add song failed');
@@ -431,6 +515,26 @@ const getSongsByAlbumId = (id) => {
     });
 };
 
+const getSongsByArtistId = (id) => {
+    return new Promise((resolve, reject) => {
+        db.all(`${SONG_SELECT}
+        and s.artist_id = ${id}
+        and s.song_id > 0;`, (err, rows) => {
+            if (err) {
+                console.log('Get songs by artist id failed');
+                reject(err);
+            } else {
+                console.log('Got songs by artist id');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Song().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
 /**
  * @function getAllAlbums
  * @memberof dataAccess
@@ -456,12 +560,55 @@ const getAllAlbums = () => {
     });
 };
 
+const getAllArtists = () => {
+    return new Promise((resolve, reject) => {
+        db.all(`select * from ARTISTS
+        where artist_id > 0;`, (err, rows) => {
+            if (err) {
+                console.log('Get all artists failed');
+                reject(err);
+            } else {
+                console.log('Got all artists');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Artist().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+const getAlbumsByArtistId = (id) => {
+    return new Promise((resolve, reject) => {
+        db.all(`select distinct a.*
+        from ALBUMS a,
+        SONGS s
+        where s.artist_id = ${id}
+        and a.album_id = s.album_id
+        and s.song_id > 0;`, (err, rows) => {
+            if (err) {
+                console.log('Get albums by artist failed');
+                reject(err);
+            } else {
+                console.log('Got albums by artist');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Album().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
 const init = () => {
     const promises = [];
     promises.push(createSongTable());
     promises.push(createAlbumTable());
     promises.push(createGroupsTable());
     promises.push(createGroupsSongsTable());
+    promises.push(createArtistTable());
 
     return Promise.allSettled(promises);
 };
@@ -478,4 +625,10 @@ module.exports.addPlaylist = addPlaylist;
 module.exports.getAllPlaylists = getAllPlaylists;
 module.exports.addSongToPlaylist = addSongToPlaylist;
 module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
+module.exports.getArtistByName = getArtistByName;
+module.exports.getArtistById = getArtistById;
+module.exports.addArtist = addArtist;
+module.exports.getSongsByArtistId = getSongsByArtistId;
+module.exports.getAlbumsByArtistId = getAlbumsByArtistId;
+module.exports.getAllArtists = getAllArtists;
 module.exports.init = init;

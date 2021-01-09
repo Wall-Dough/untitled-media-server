@@ -30,15 +30,48 @@ app.get('/', (req, res) => {
 });
 
 app.get('/artists', (req, res) => {
-    res.sendStatus(404);
+    manager.getAllArtists().then((artists) => {
+        res.send(artists);
+    }).catch((err) => {
+        console.log('Get all artists request failed');
+        res.send(err);
+    });
 });
 
-app.get('/artists/:artist', (req, res) => {
-    res.sendStatus(404);
+app.get('/artists/:artistId', (req, res) => {
+    manager.getArtistById(Number(req.params.artistId)).then((artist) => {
+        res.send(artist);
+    }).catch((err) => {
+        console.log('Get artist by ID request failed');
+        res.send(err);
+    });
 });
 
-app.get('/artists/:artist/stream', (req, res) => {
-    res.sendStatus(404);
+app.get('/artists/:artistId/songs', (req, res) => {
+    manager.getSongsByArtistId(Number(req.params.artistId)).then((songs) => {
+        res.send(songs);
+    }).catch((err) => {
+        console.log('Get songs by artist ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/artists/:artistId/songs/stream', (req, res) => {
+    manager.getSongsByArtistId(Number(req.params.artistId)).then((songs) => {
+        sendPlaylist(req, res, songs);
+    }).catch((err) => {
+        console.log('Get songs by artist ID request failed');
+        res.send(err);
+    });
+});
+
+app.get('/artists/:artistId/albums', (req, res) => {
+    manager.getAlbumsByArtistId(Number(req.params.artistId)).then((albums) => {
+        res.send(albums);
+    }).catch((err) => {
+        console.log('Get albums by artist ID request failed');
+        res.send(err);
+    });
 });
 
 app.get('/albums', (req, res) => {
