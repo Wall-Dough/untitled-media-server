@@ -11,11 +11,11 @@ const fs = require('fs');
 
 const getAlbumFromMetadata = (metadata) => {
     return new Promise((resolve, reject) => {
-        dataAccess.getAlbumByTitle(metadata.common.album).then((album) => {
+        dataAccess.albums.getAlbumByTitle(metadata.common.album).then((album) => {
             if (album == undefined) {
                 album = new dataObject.Album().fromMetadata(metadata);
-                dataAccess.addAlbum(album).then(() => {
-                    dataAccess.getAlbumByTitle(metadata.common.album).then((album) => {
+                dataAccess.albums.addAlbum(album).then(() => {
+                    dataAccess.albums.getAlbumByTitle(metadata.common.album).then((album) => {
                         resolve(album);
                     }).catch((err) => {
                         reject(err);
@@ -34,11 +34,11 @@ const getAlbumFromMetadata = (metadata) => {
 
 const getArtistFromMetadata = (metadata) => {
     return new Promise((resolve, reject) => {
-        dataAccess.getArtistByName(metadata.common.artist).then((artist) => {
+        dataAccess.artists.getArtistByName(metadata.common.artist).then((artist) => {
             if (artist == undefined) {
                 artist = new dataObject.Artist().fromMetadata(metadata);
-                dataAccess.addArtist(artist).then(() => {
-                    dataAccess.getArtistByName(metadata.common.artist).then((artist) => {
+                dataAccess.artists.addArtist(artist).then(() => {
+                    dataAccess.artists.getArtistByName(metadata.common.artist).then((artist) => {
                         resolve(artist);
                     }).catch((err) => {
                         reject(err);
@@ -57,7 +57,7 @@ const getArtistFromMetadata = (metadata) => {
 
 const addSongFromPath = (path) => {
     return new Promise((resolve, reject) => {
-        dataAccess.getSongByPath(path).then((row) => {
+        dataAccess.songs.getSongByPath(path).then((row) => {
             if (row != undefined) {
                 resolve();
                 return;
@@ -68,7 +68,7 @@ const addSongFromPath = (path) => {
                         const song = new dataObject.Song(path).fromMetadata(metadata);
                         song.albumId = album.id;
                         song.artistId = artist.id;
-                        dataAccess.addSong(song).then(() => {
+                        dataAccess.songs.addSong(song).then(() => {
                             resolve();
                         }).catch((err) => {
                             reject(err);
@@ -88,9 +88,8 @@ const addSongFromPath = (path) => {
     });
 };
 
-
 const getAllSongs = () => {
-    return dataAccess.getAllSongs();
+    return dataAccess.songs.getAllSongs();
 };
 
 /**
@@ -102,7 +101,7 @@ const getAllSongs = () => {
  * @returns a Promise that resolves with the song
  */
 const getSongById = (id) => {
-    return dataAccess.getSongById(id);
+    return dataAccess.songs.getSongById(id);
 };
 
 /**
@@ -114,14 +113,14 @@ const getSongById = (id) => {
  * @returns a Promise that resolves with an array of the songs in the album
  */
 const getSongsByAlbumId = (id) => {
-    return dataAccess.getSongsByAlbumId(id);
+    return dataAccess.songs.getSongsByAlbumId(id);
 };
 
 /**
  * @see {@link dataAccess.getAllAlbums}
  */
 const getAllAlbums = () => {
-    return dataAccess.getAllAlbums();
+    return dataAccess.albums.getAllAlbums();
 }
 
 /**
@@ -133,7 +132,7 @@ const getAllAlbums = () => {
  * @returns a Promise that resolves when the playlist has been added
  */
 const addPlaylist = (playlistName) => {
-    return dataAccess.addPlaylist(playlistName);
+    return dataAccess.playlists.addPlaylist(playlistName);
 };
 
 /**
@@ -144,7 +143,7 @@ const addPlaylist = (playlistName) => {
  * @returns a Promise that resolves with an array of all playlists
  */
 const getAllPlaylists = () => {
-    return dataAccess.getAllPlaylists();
+    return dataAccess.playlists.getAllPlaylists();
 };
 
 /**
@@ -157,7 +156,7 @@ const getAllPlaylists = () => {
  * @returns a Promise that resolves when the song has been added to the playlist
  */
 const addSongToPlaylist = (playlistId, songId) => {
-    return dataAccess.addSongToPlaylist(playlistId, songId);
+    return dataAccess.playlists.addSongToPlaylist(playlistId, songId);
 }
 
 /**
@@ -169,7 +168,7 @@ const addSongToPlaylist = (playlistId, songId) => {
  * @returns a Promise that resolves with an array of the songs in the playlist
  */
 const getSongsByPlaylistId = (id) => {
-    return dataAccess.getSongsByPlaylistId(id);
+    return dataAccess.songs.getSongsByPlaylistId(id);
 };
 
 const supportedFileTypes = ['.mp3', '.m4a'];
@@ -202,24 +201,26 @@ const scanFoldersForMediaFiles = () => {
         }
         Promise.allSettled(promises).then(() => {
             resolve();
+        }).catch((err) => {
+            reject(err);
         });
     });
 };
 
 const getSongsByArtistId = (id) => {
-    return dataAccess.getSongsByArtistId(id);
+    return dataAccess.songs.getSongsByArtistId(id);
 };
 
 const getAlbumsByArtistId = (id) => {
-    return dataAccess.getAlbumsByArtistId(id);
+    return dataAccess.albums.getAlbumsByArtistId(id);
 };
 
 const getArtistById = (id) => {
-    return dataAccess.getArtistById(id);
+    return dataAccess.artists.getArtistById(id);
 };
 
 const getAllArtists = () => {
-    return dataAccess.getAllArtists();
+    return dataAccess.artists.getAllArtists();
 };
 
 
