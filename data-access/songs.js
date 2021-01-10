@@ -1,4 +1,5 @@
 const dataObject = require('../data-object');
+const ServerError = require('../util').ServerError;
 
 let db = undefined;
 
@@ -17,8 +18,7 @@ const insertBlankSong = () => {
         db.run(`insert into SONGS (song_id, file_path, title, artist_id, album_id, disc, track, year, genre)
         values (0, '', '', 0, 0, 0, 0, 0, '')`, (err) => {
             if (err) {
-                console.log('Insert blank song failed');
-                reject(err);
+                reject(new ServerError('Failed to insert blank song', err));
             } else {
                 console.log('Inserted blank song');
                 resolve();
@@ -40,8 +40,7 @@ const createSongTable = () => {
             year INTEGER,
             genre TEXT);`, (err) => {
                 if (err) {
-                    console.log('Create song failed');
-                    reject(err);
+                    reject(new ServerError('Failed to create song table', err));
                 } else {
                     console.log('Created song table');
                     insertBlankSong().then(() => {
@@ -60,10 +59,9 @@ const addSong = (song) => {
         values ($filePath, $title, $artistId, $albumId, $discNumber, $trackNumber, $year, $genre);`,
         song.toDB(), (err) => {
             if (err) {
-                console.log('Add song failed');
-                reject(err);
+                reject(new ServerError(`Failed to add song '${song.title}'`, err));
             } else {
-                console.log('Added song');
+                console.log(`Added song '${song.title}'`);
                 resolve();
             }
         });
@@ -75,8 +73,7 @@ const getAllSongs = () => {
         db.all(`${SONG_SELECT}
         and s.song_id > 0;`, (err, rows) => {
             if (err) {
-                console.log('Get all songs failed');
-                reject(err);
+                reject(new ServerError('Failed to get all songs', err));
             } else {
                 console.log('Got all songs');
                 const results = [];
@@ -103,10 +100,9 @@ const getSongById = (id) => {
             $songId: id
         }, (err, row) => {
             if (err) {
-                console.log('Get song by id failed');
-                reject(err);
+                reject(new ServerError(`Failed to get song with ID ${id}`, err));
             } else {
-                console.log('Got song by id');
+                console.log(`Got song with ID ${id}`);
                 resolve(new dataObject.Song().fromDB(row));
             }
         });
@@ -119,10 +115,9 @@ const getSongByPath = (path) => {
             $path: path
         }, (err, row) => {
             if (err) {
-                console.log('Get song by path failed');
-                reject(err);
+                reject(new ServerError(`Failed to get song by path '${path}'`, err));
             } else {
-                console.log('Got song by path');
+                console.log(`Got song by path '${path}'`);
                 resolve(row);
             }
         });
@@ -145,10 +140,9 @@ const getSongsByAlbumId = (id) => {
             $albumId: id
         }, (err, rows) => {
             if (err) {
-                console.log('Get songs by album id failed');
-                reject(err);
+                reject(new ServerError(`Failed to get songs by album ID ${id}`, err));
             } else {
-                console.log('Got songs by album id');
+                console.log(`Got songs by album ID ${id}`);
                 const results = [];
                 for (let row of rows) {
                     results.push(new dataObject.Song().fromDB(row));
@@ -167,10 +161,9 @@ const getSongsByArtistId = (id) => {
             $artistId: id
         }, (err, rows) => {
             if (err) {
-                console.log('Get songs by artist id failed');
-                reject(err);
+                reject(new ServerError(`Failed to get songs by artist ID ${id}`, err));
             } else {
-                console.log('Got songs by artist id');
+                console.log(`Got songs by artist ID ${id}`);
                 const results = [];
                 for (let row of rows) {
                     results.push(new dataObject.Song().fromDB(row));
@@ -192,10 +185,9 @@ const getSongsByGroupId = (groupId) => {
             $groupId: groupId
         }, (err, rows) => {
             if (err) {
-                console.log('Get songs by group id failed');
-                reject(err);
+                reject(new ServerError(`Failed to get songs by group ID ${groupId}`, err));
             } else {
-                console.log('Got songs by group id');
+                console.log(`Got songs by group ID ${groupId}`);
                 const results = [];
                 for (let row of rows) {
                     results.push(new dataObject.Song().fromDB(row));
@@ -215,7 +207,13 @@ const getSongsByGroupId = (groupId) => {
  * @returns a Promise that resolves with an array of the songs in the playlist
  */
 const getSongsByPlaylistId = (playlistId) => {
-    return getSongsByGroupId(playlistId);
+    return new Promise((resolve, reject) => {
+        getSongsByGroupId(playlistId).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get songs by playlist ID ${playlistId}`, err));
+        });
+    });
 };
 
 const init = (theDB) => {
@@ -224,7 +222,7 @@ const init = (theDB) => {
         createSongTable().then(() => {
             resolve();
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError(`Failed to initialize songs`, err));
         });
     });
 };

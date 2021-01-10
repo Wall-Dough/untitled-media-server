@@ -1,4 +1,7 @@
+const EOL = require('os').EOL;
+
 const dataObject = require('../data-object');
+const ServerError = require('../util').ServerError;
 
 let db = undefined;
 
@@ -7,8 +10,7 @@ const insertBlankAlbum = () => {
         db.run(`insert into ALBUMS (album_id, title, artist, year, genre)
         values (0, '', '', 0, '')`, (err) => {
             if (err) {
-                console.log('Insert blank album failed');
-                reject(err);
+                reject(new ServerError('Failed to insert blank album', err));
             } else {
                 console.log('Inserted blank album');
                 resolve();
@@ -27,8 +29,7 @@ const createAlbumTable = () => {
             genre TEXT
             );`, (err) => {
                 if (err) {
-                    console.log('Create album failed');
-                    reject(err);
+                    reject(new ServerError('Failed to create album table', err));
                 } else {
                     console.log('Created album table');
                     insertBlankAlbum().then(() => {
@@ -46,11 +47,9 @@ const addAlbum = (album) => {
         db.run(`insert into ALBUMS (title, artist, year, genre)
         values ($title, $artist, $year, $genre);`, album.toDB(), (err) => {
             if (err) {
-                console.log('Add album failed');
-                console.log(err);
-                reject(err);
+                reject(new ServerError(`Failed to add album '${album.title}'`, err));
             } else {
-                console.log('Added album');
+                console.log(`Added album '${album.title}'`);
                 resolve();
             }
         });
@@ -68,8 +67,7 @@ const getAllAlbums = () => {
     return new Promise((resolve, reject) => {
         db.all(`select * from ALBUMS;`, (err, rows) => {
             if (err) {
-                console.log('Get all albums failed');
-                reject(err);
+                reject(new ServerError('Failed to get all albums', err));
             } else {
                 console.log('Got all albums');
                 const results = [];
@@ -90,10 +88,12 @@ const getAlbumByTitle = (title) => {
                 $title: title
             }, (err, row) => {
                 if (err) {
-                    console.log('Get album by title failed');
-                    reject(err);
+                    reject(new ServerError(`Failed to get album by title '${title}'`, err));
                 } else {
-                    console.log('Got the album by title');
+                    console.log(`Got the album by title '${title}'`);
+                    if (row == undefined) {
+                        console.log(`(Album '${title}' doesn't exist yet)`)
+                    }
                     resolve(row == undefined ? undefined : new dataObject.Album().fromDB(row));
                 }
             });
@@ -111,8 +111,7 @@ const getAlbumsByArtistId = (id) => {
             $artistId: id
         }, (err, rows) => {
             if (err) {
-                console.log('Get albums by artist failed');
-                reject(err);
+                reject(new Server(`Failed to get albums by artist ID ${id}`, err));
             } else {
                 console.log('Got albums by artist');
                 const results = [];
@@ -131,7 +130,7 @@ const init = (theDB) => {
         createAlbumTable().then(() => {
             resolve();
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError('Failed to initialize albums', err));
         })
     });
 };

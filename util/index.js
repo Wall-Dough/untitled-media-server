@@ -36,5 +36,15 @@ const createPLS = (hostname, ids) => {
     return plsString;
 };
 
+class ServerError {
+    constructor(message, cause) {
+        this.message = message;
+        if (cause) {
+            this.message += `:${EOL}  ${cause.message}`;
+        }
+    }
+}
+
 module.exports.relativePath = relativePath;
 module.exports.createPLS = createPLS;
+module.exports.ServerError = ServerError;

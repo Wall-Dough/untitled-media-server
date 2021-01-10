@@ -1,4 +1,5 @@
 const dataObject = require('../data-object');
+const ServerError= require('../util').ServerError;
 
 let db = undefined;
 
@@ -10,8 +11,7 @@ const insertBlankGroup = () => {
         db.run(`insert into GROUPS (group_id, name, type_cd)
         values (0, '', 0)`, (err) => {
             if (err) {
-                console.log('Insert blank group failed');
-                reject(err);
+                reject(new ServerError('Failed to insert blank group', err));
             } else {
                 console.log('Inserted blank group');
                 resolve();
@@ -28,8 +28,7 @@ const createGroupsTable = () => {
             type_cd INTEGER
             );`, (err) => {
                 if (err) {
-                    console.log('Create groups table failed');
-                    reject(err);
+                    reject(new ServerError('Failed to create groups table', err));
                 } else {
                     console.log('Created groups table');
                     insertBlankGroup().then(() => {
@@ -47,8 +46,7 @@ const insertBlankGroupsSongsRow = () => {
         db.run(`insert into GROUPS_SONGS (group_id, song_id)
         values (0, 0)`, (err) => {
             if (err) {
-                console.log('Insert blank groups songs row failed');
-                reject(err);
+                reject(new ServerError('Failed to insert blank groups songs row', err));
             } else {
                 console.log('Inserted blank groups songs row');
                 resolve();
@@ -64,8 +62,7 @@ const createGroupsSongsTable = () => {
             song_id INTEGER
             );`, (err) => {
                 if (err) {
-                    console.log('Create groups and songs table failed');
-                    reject(err);
+                    reject(new ServerError('Failed to create groups and songs table', err));
                 } else {
                     console.log('Created groups and songs table');
                     insertBlankGroupsSongsRow().then(() => {
@@ -86,10 +83,9 @@ const addGroup = (groupName, typeCode) => {
             $typeCd: typeCode
         }, (err) => {
             if (err) {
-                console.log('Add group failed');
-                reject(err);
+                reject(new ServerError(`Failed to add group '${groupName}' with type code ${typeCode}`, err));
             } else {
-                console.log('Added group');
+                console.log(`Added group '${groupName}' with type code ${typeCode}`);
                 resolve();
             }
         });
@@ -104,10 +100,10 @@ const addSongToGroup = (groupId, songId) => {
             $songId: songId
         }, (err) => {
             if (err) {
-                console.log('Add song to group failed');
+                console.log(new ServerError(`Failed to add song ID ${songId} to group ID ${groupId}`));
                 reject(err);
             } else {
-                console.log('Added song to group');
+                console.log(`Added song ID ${songId} to group ID ${groupId}`);
                 resolve();
             }
         });
@@ -122,10 +118,9 @@ const getAllGroupsByTypeCd = (typeCd) => {
             $typeCd: typeCd
         }, (err, rows) => {
             if (err) {
-                console.log('Get groups by type cd failed');
-                reject(err);
+                reject(new ServerError(`Failed to get all groups with type code ${typeCd}`, err));
             } else {
-                console.log('Got groups by type cd');
+                console.log(`Got all groups with type code ${typeCd}`);
                 const results = [];
                 for (let row of rows) {
                     results.push(new dataObject.Group().fromDB(row));
@@ -138,10 +133,16 @@ const getAllGroupsByTypeCd = (typeCd) => {
 
 const init = (theDB) => {
     db = theDB;
-    const promises = [];
-    promises.push(createGroupsTable());
-    promises.push(createGroupsSongsTable());
-    return Promise.allSettled(promises);
+    return new Promise((resolve, reject) => {
+        const promises = [];
+        promises.push(createGroupsTable());
+        promises.push(createGroupsSongsTable());
+        return Promise.all(promises).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject(new ServerError('Failed to initialize groups', err));
+        });
+    });
 };
 
 module.exports.Types = Types;
