@@ -1,5 +1,3 @@
-const EOL = require('os').EOL;
-
 const dataObject = require('../data-object');
 const ServerError = require('../util').ServerError;
 
