@@ -180,6 +180,7 @@ const isSupported = (file) => {
     }
     return false;
 }
+
 const scanFolderForMediaFiles = (path, promises) => {
     const dir = fs.opendirSync(path);
     while (true) {
