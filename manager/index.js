@@ -4,7 +4,7 @@
 
 const dataAccess = require('../data-access');
 const dataObject = require('../data-object');
-const util = require('../util');
+const ServerError = require('../util').ServerError;
 const config = require('../config');
 const mm = require('music-metadata');
 const fs = require('fs');
@@ -18,16 +18,16 @@ const getAlbumFromMetadata = (metadata) => {
                     dataAccess.albums.getAlbumByTitle(metadata.common.album).then((album) => {
                         resolve(album);
                     }).catch((err) => {
-                        reject(err);
+                        reject(new ServerError('Failed to get album from metadata', err));
                     });
                 }).catch((err) => {
-                    reject(err);
+                    reject(new ServerError('Failed to get album from metadata', err));
                 });
             } else {
                 resolve(album);
             }
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError('Failed to get album from metadata', err));
         });
     });
 };
@@ -41,16 +41,16 @@ const getArtistFromMetadata = (metadata) => {
                     dataAccess.artists.getArtistByName(metadata.common.artist).then((artist) => {
                         resolve(artist);
                     }).catch((err) => {
-                        reject(err);
+                        reject(new ServerError('Failed to get artist from metadata', err));
                     });
                 }).catch((err) => {
-                    reject(err);
+                    reject(new ServerError('Failed to get artist from metadata', err));
                 });
             } else {
                 resolve(artist);
             }
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError('Failed to get artist from metadata', err));
         });
     });
 };
@@ -71,19 +71,19 @@ const addSongFromPath = (path) => {
                         dataAccess.songs.addSong(song).then(() => {
                             resolve();
                         }).catch((err) => {
-                            reject(err);
+                            reject(new ServerError(`Failed to add song from path '${path}'`, err));
                         });
                     }).catch((err) => {
-                        reject(err);
+                        reject(new ServerError(`Failed to add song from path '${path}'`, err));
                     });
                 }).catch((err) => {
-                    reject(err);
+                    reject(new ServerError(`Failed to add song from path '${path}'`, err));
                 });
             }).catch((err) => {
-                reject(err);
+                reject(new ServerError(`Failed to add song from path '${path}'`, err));
             });
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError(`Failed to add song from path '${path}'`, err));
         });
     });
 };
@@ -199,7 +199,7 @@ const scanFoldersForMediaFiles = () => {
             }
             dir.closeSync();
         }
-        Promise.allSettled(promises).then(() => {
+        Promise.all(promises).then(() => {
             resolve();
         }).catch((err) => {
             reject(err);

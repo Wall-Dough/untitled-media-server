@@ -1,4 +1,5 @@
 const dataObject = require('../data-object');
+const { ServerError } = require('../util');
 const groups = require('./groups');
 
 let db = undefined;
@@ -12,7 +13,13 @@ let db = undefined;
  * @returns a Promise that resolves when the playlist has been added
  */
 const addPlaylist = (playlistName) => {
-    return groups.addGroup(playlistName, groups.Types.PLAYLIST);
+    return new Promise((resolve, reject) => {
+        groups.addGroup(playlistName, groups.Types.PLAYLIST).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject(new ServerError(`Failed to add playlist '${playlistName}'`, err));
+        });
+    });
 };
 
 /**
@@ -25,7 +32,13 @@ const addPlaylist = (playlistName) => {
  * @returns a Promise that resolves when the song has been added to the playlist
  */
 const addSongToPlaylist = (playlistId, songId) => {
-    return groups.addSongToGroup(playlistId, songId);
+    return new Promise((resolve, reject) => {
+        groups.addSongToGroup(playlistId, songId).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject(new ServerError(`Failed to add song ID ${songId} to playlist ID ${playlistId}`, err));
+        });
+    });
 };
 
 /**
@@ -43,7 +56,7 @@ const getAllPlaylists = () => {
             });
             resolve(playlists);
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError('Failed to get all playlists', err));
         });
     });
 };

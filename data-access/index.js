@@ -3,6 +3,7 @@
  */
 
 const sqlite3 = require('sqlite3');
+const ServerError = require('../util').ServerError;
 
 const albums = require('./albums');
 const artists = require('./artists');
@@ -13,13 +14,19 @@ const songs = require('./songs');
 const db = new sqlite3.Database(':memory:');
 
 const init = () => {
-    const promises = [];
-    promises.push(albums.init(db));
-    promises.push(artists.init(db));
-    promises.push(groups.init(db));
-    promises.push(playlists.init(db))
-    promises.push(songs.init(db));
-    return Promise.allSettled(promises);
+    return new Promise((resolve, reject) => {
+        const promises = [];
+        promises.push(albums.init(db));
+        promises.push(artists.init(db));
+        promises.push(groups.init(db));
+        promises.push(playlists.init(db))
+        promises.push(songs.init(db));
+        Promise.all(promises).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject(new ServerError('Failed to initialize the database', err))
+        });
+    });
 };
 
 module.exports.albums = albums;

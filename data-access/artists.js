@@ -1,4 +1,5 @@
 const dataObject = require('../data-object');
+const ServerError = require('../util').ServerError;
 
 let db = undefined;
 
@@ -7,8 +8,7 @@ const insertBlankArtist = () => {
         db.run(`insert into ARTISTS (artist_id, name)
         values (0, '')`, (err) => {
             if (err) {
-                console.log('Insert blank artist failed');
-                reject(err);
+                reject(new ServerError('Failed to insert blank artist', err));
             } else {
                 console.log('Inserted blank artist');
                 resolve();
@@ -24,8 +24,7 @@ const createArtistTable = () => {
             name TEXT
             );`, (err) => {
                 if (err) {
-                    console.log('Create artist table failed');
-                    reject(err);
+                    reject(new ServerError('Failed to create artist table', err));
                 } else {
                     console.log('Created artist table');
                     insertBlankArtist().then(() => {
@@ -43,10 +42,9 @@ const addArtist = (artist) => {
         db.run(`insert into ARTISTS (name)
         values ($name);`, artist.toDB(), (err) => {
             if (err) {
-                console.log('Add artist failed');
-                reject(err);
+                reject(new ServerError(`Failed to add artist '${artist.name}'`, err));
             } else {
-                console.log('Added artist');
+                console.log(`Added artist '${artist.name}'`);
                 resolve();
             }
         });
@@ -58,8 +56,7 @@ const getAllArtists = () => {
         db.all(`select * from ARTISTS
         where artist_id > 0;`, (err, rows) => {
             if (err) {
-                console.log('Get all artists failed');
-                reject(err);
+                reject(new ServerError('Failed to get all artists', err));
             } else {
                 console.log('Got all artists');
                 const results = [];
@@ -80,10 +77,12 @@ const getArtistByName = (artistName) => {
                 $artistName: artistName
             }, (err, row) => {
                 if (err) {
-                    console.log('Get artist by name failed');
-                    reject(err);
+                    reject(new ServerError(`Failed to get artist by name '${artistName}'`, err));
                 } else {
-                    console.log('Got the artist by name');
+                    console.log(`Got the artist by name '${artistName}'`);
+                    if (row == undefined) {
+                        console.log(`(Artist '${artistName}' doesn't exist yet)`)
+                    }
                     resolve(row == undefined ? undefined : new dataObject.Artist().fromDB(row));
                 }
             });
@@ -97,8 +96,7 @@ const getArtistById = (artistId) => {
                 $artistId: artistId
             }, (err, row) => {
                 if (err) {
-                    console.log('Get artist by ID failed');
-                    reject(err);
+                    reject(new ServerError(`Failed to get artist by ID ${artistId}`, err));
                 } else {
                     console.log('Got the artist by ID');
                     resolve(row == undefined ? undefined : new dataObject.Artist().fromDB(row));
@@ -113,7 +111,7 @@ const init = (theDB) => {
         createArtistTable().then(() => {
             resolve();
         }).catch((err) => {
-            reject(err);
+            reject(new ServerError('Failed to initialize artists', err));
         });
     });
 };
