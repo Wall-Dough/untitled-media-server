@@ -21,7 +21,8 @@ const createArtistTable = () => {
     return new Promise((resolve, reject) => {
         db.run(`create table ARTISTS (
             artist_id INTEGER PRIMARY KEY,
-            name TEXT
+            name TEXT,
+            unique(name)
             );`, (err) => {
                 if (err) {
                     reject(new ServerError('Failed to create artist table', err));
@@ -42,7 +43,11 @@ const addArtist = (artist) => {
         db.run(`insert into ARTISTS (name)
         values ($name);`, artist.toDB(), (err) => {
             if (err) {
-                reject(new ServerError(`Failed to add artist '${artist.name}'`, err));
+                if (err.errno == 19 && err.message.includes('UNIQUE constraint failed')) {
+                    resolve();
+                } else {
+                    reject(new ServerError(`Failed to add artist '${artist.name}'`, err));
+                }
             } else {
                 console.log(`Added artist '${artist.name}'`);
                 resolve();

@@ -24,7 +24,8 @@ const createAlbumTable = () => {
             title TEXT,
             artist TEXT,
             year INTEGER,
-            genre TEXT
+            genre TEXT,
+            unique(title, artist)
             );`, (err) => {
                 if (err) {
                     reject(new ServerError('Failed to create album table', err));
@@ -45,7 +46,11 @@ const addAlbum = (album) => {
         db.run(`insert into ALBUMS (title, artist, year, genre)
         values ($title, $artist, $year, $genre);`, album.toDB(), (err) => {
             if (err) {
-                reject(new ServerError(`Failed to add album '${album.title}'`, err));
+                if (err.errno == 19 && err.message.includes('UNIQUE constraint failed')) {
+                    resolve();
+                } else {
+                    reject(new ServerError(`Failed to add album '${album.title}'`, err));
+                }
             } else {
                 console.log(`Added album '${album.title}'`);
                 resolve();
