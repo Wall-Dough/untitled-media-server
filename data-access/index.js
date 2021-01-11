@@ -7,6 +7,7 @@ const ServerError = require('../util').ServerError;
 
 const albums = require('./albums');
 const artists = require('./artists');
+const folders = require('./folders');
 const groups = require('./groups');
 const playlists = require('./playlists');
 const songs = require('./songs');
@@ -18,6 +19,7 @@ const init = () => {
         const promises = [];
         promises.push(albums.init(db));
         promises.push(artists.init(db));
+        promises.push(folders.init(db));
         promises.push(groups.init(db));
         promises.push(playlists.init(db))
         promises.push(songs.init(db));
@@ -31,6 +33,7 @@ const init = () => {
 
 module.exports.albums = albums;
 module.exports.artists = artists;
+module.exports.folders = folders;
 module.exports.groups = groups;
 module.exports.playlists = playlists;
 module.exports.songs = songs;
