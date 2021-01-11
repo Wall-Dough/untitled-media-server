@@ -228,6 +228,21 @@ const getAllArtists = () => {
     return dataAccess.artists.getAllArtists();
 };
 
+const getAllStarredAlbums = () => {
+    return dataAccess.albums.getAllStarredAlbums();
+}
+
+const setStarredForAlbumId = (id, starred) => {
+    return dataAccess.albums.setStarredForAlbumId(id, starred);
+}
+
+const getAllStarredSongs = () => {
+    return dataAccess.songs.getAllStarredSongs();
+}
+
+const setStarredForSongId = (id, starred) => {
+    return dataAccess.songs.setStarredForSongId(id, starred);
+}
 
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
@@ -243,3 +258,7 @@ module.exports.getArtistById = getArtistById;
 module.exports.getSongsByArtistId = getSongsByArtistId;
 module.exports.getAlbumsByArtistId = getAlbumsByArtistId;
 module.exports.getAllArtists = getAllArtists;
+module.exports.getAllStarredAlbums = getAllStarredAlbums;
+module.exports.setStarredForAlbumId = setStarredForAlbumId;
+module.exports.getAllStarredSongs = getAllStarredSongs;
+module.exports.setStarredForSongId = setStarredForSongId;

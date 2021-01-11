@@ -85,6 +85,33 @@ app.get('/albums', (req, res) => {
     });
 });
 
+app.get('/albums/starred', (req, res) => {
+    manager.getAllStarredAlbums().then((albums) => {
+        res.status(200).send(albums);
+    }).catch((err) => {
+        console.log('Get all starred albums request failed');
+        console.log(err.message);
+    });
+});
+
+app.put('/albums/starred/:albumId', (req, res) => {
+    manager.setStarredForAlbumId(Number(req.params.albumId), true).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Star album request failed');
+        console.log(err.message);
+    });
+});
+
+app.delete('/albums/starred/:albumId', (req, res) => {
+    manager.setStarredForAlbumId(Number(req.params.albumId), false).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Unstar album request failed');
+        console.log(err.message);
+    });
+});
+
 app.get('/albums/:albumId', (req, res) => {
     manager.getSongsByAlbumId(Number(req.params.albumId)).then((songs) => {
         res.status(200).send(songs);
@@ -171,6 +198,33 @@ app.get('/songs/', (req, res) => {
         res.status(200).send(songs);
     }).catch((err) => {
         console.log('Get all songs request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.get('/songs/starred', (req, res) => {
+    manager.getAllStarredSongs().then((songs) => {
+        res.status(200).send(songs);
+    }).catch((err) => {
+        console.log('Get all starred songs request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.put('/songs/starred/:songId', (req, res) => {
+    manager.setStarredForSongId(Number(req.params.songId), true).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Star song request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.delete('/songs/starred/:songId', (req, res) => {
+    manager.setStarredForSongId(Number(req.params.songId), false).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Unstar song request failed');
         res.status(500).send(err.message);
     });
 });

@@ -4,7 +4,7 @@ const ServerError = require('../util').ServerError;
 let db = undefined;
 
 const SONG_SELECT_PART = `select s.song_id, s.file_path, s.title, s.artist_id, 
-s.album_id, s.disc, s.track, s.year, s.genre, 
+s.album_id, s.disc, s.track, s.year, s.genre, s.starred,
 a.title as album, art.name as artist
 from SONGS s,
 ALBUMS a,
@@ -15,8 +15,8 @@ and art.artist_id = s.artist_id`;
 
 const insertBlankSong = () => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into SONGS (song_id, file_path, title, artist_id, album_id, disc, track, year, genre)
-        values (0, '', '', 0, 0, 0, 0, 0, '')`, (err) => {
+        db.run(`insert into SONGS (song_id, file_path, title, artist_id, album_id, disc, track, year, genre, starred)
+        values (0, '', '', 0, 0, 0, 0, 0, '', 0)`, (err) => {
             if (err) {
                 reject(new ServerError('Failed to insert blank song', err));
             } else {
@@ -38,6 +38,7 @@ const createSongTable = () => {
             disc INTEGER,
             track INTEGER,
             year INTEGER,
+            starred INTEGER,
             genre TEXT);`, (err) => {
                 if (err) {
                     reject(new ServerError('Failed to create song table', err));
@@ -55,8 +56,8 @@ const createSongTable = () => {
 
 const addSong = (song) => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into SONGS (file_path, title, artist_id, album_id, disc, track, year, genre)
-        values ($filePath, $title, $artistId, $albumId, $discNumber, $trackNumber, $year, $genre);`,
+        db.run(`insert into SONGS (file_path, title, artist_id, album_id, disc, track, year, genre, starred)
+        values ($filePath, $title, $artistId, $albumId, $discNumber, $trackNumber, $year, $genre, $starred);`,
         song.toDB(), (err) => {
             if (err) {
                 reject(new ServerError(`Failed to add song '${song.title}'`, err));
@@ -216,6 +217,49 @@ const getSongsByPlaylistId = (playlistId) => {
     });
 };
 
+const getAllStarredSongs = () => {
+    return new Promise((resolve, reject) => {
+        db.all(`${SONG_SELECT}
+        and s.starred > 0;`, (err, rows) => {
+            if (err) {
+                reject(new ServerError('Failed to get all starred songs', err));
+            } else {
+                console.log('Got all starred songs');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Song().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+const setStarredForSongId = (id, starred) => {
+    return new Promise((resolve, reject) => {
+        if (id <= 0) {
+            reject(new ServerError(`Cannot set starred to ${starred} for invalid song ID ${id}`));
+        }
+        if (starred == undefined) {
+            reject(new ServerError(`Invalid starred value ${starred} for song ID ${id}`));
+        }
+        db.run(`update SONGS
+        set starred = $starred
+        where song_id = $songId;`, {
+            $starred: starred,
+            $songId: id 
+        }, (err) => {
+            if (err) {
+                reject(new ServerError(`Failed to set starred to ${starred} for song ID ${id}`, err));
+            } else {
+                console.log(`Set starred to ${starred} for song ID ${id}`);
+                resolve();
+            }
+        });
+    });
+};
+
+
 const init = (theDB) => {
     db = theDB;
     return new Promise((resolve, reject) => {
@@ -235,4 +279,6 @@ module.exports.getSongsByAlbumId = getSongsByAlbumId;
 module.exports.getSongsByArtistId = getSongsByArtistId;
 module.exports.getSongsByGroupId = getSongsByGroupId;
 module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
+module.exports.getAllStarredSongs = getAllStarredSongs;
+module.exports.setStarredForSongId = setStarredForSongId;
 module.exports.init = init;
