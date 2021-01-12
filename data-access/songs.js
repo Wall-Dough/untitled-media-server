@@ -182,6 +182,7 @@ const getSongsByGroupId = (groupId) => {
         where gs.group_id = $groupId
         and s.song_id = gs.song_id
         and s.album_id = a.album_id
+        and s.artist_id = art.artist_id
         and s.song_id > 0;`, {
             $groupId: groupId
         }, (err, rows) => {
@@ -209,8 +210,8 @@ const getSongsByGroupId = (groupId) => {
  */
 const getSongsByPlaylistId = (playlistId) => {
     return new Promise((resolve, reject) => {
-        getSongsByGroupId(playlistId).then(() => {
-            resolve();
+        getSongsByGroupId(playlistId).then((songs) => {
+            resolve(songs);
         }).catch((err) => {
             reject(new ServerError(`Failed to get songs by playlist ID ${playlistId}`, err));
         });

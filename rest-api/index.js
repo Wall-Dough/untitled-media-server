@@ -159,7 +159,7 @@ app.put('/playlists', (req, res) => {
 
 app.get('/playlists/:playlistId', (req, res) => {
     manager.getSongsByPlaylistId(Number(req.params.playlistId)).then((songs) => {
-        res.send(songs);
+        res.status(200).send(songs);
     }).catch((err) => {
         console.log('Get playlist by ID request failed');
         res.status(500).send(err.message);
