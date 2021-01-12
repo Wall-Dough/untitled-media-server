@@ -5,8 +5,8 @@ let db = undefined;
 
 const insertBlankAlbum = () => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into ALBUMS (album_id, title, artist, year, genre)
-        values (0, '', '', 0, '')`, (err) => {
+        db.run(`insert into ALBUMS (album_id, title, artist, year, genre, starred)
+        values (0, '', '', 0, '', 0)`, (err) => {
             if (err) {
                 reject(new ServerError('Failed to insert blank album', err));
             } else {
@@ -25,6 +25,7 @@ const createAlbumTable = () => {
             artist TEXT,
             year INTEGER,
             genre TEXT,
+            starred INTEGER,
             unique(title, artist)
             );`, (err) => {
                 if (err) {
@@ -43,8 +44,8 @@ const createAlbumTable = () => {
 
 const addAlbum = (album) => {
     return new Promise((resolve, reject) => {
-        db.run(`insert into ALBUMS (title, artist, year, genre)
-        values ($title, $artist, $year, $genre);`, album.toDB(), (err) => {
+        db.run(`insert into ALBUMS (title, artist, year, genre, starred)
+        values ($title, $artist, $year, $genre, $starred);`, album.toDB(), (err) => {
             if (err) {
                 if (err.errno == 19 && err.message.includes('UNIQUE constraint failed')) {
                     resolve();
@@ -114,7 +115,7 @@ const getAlbumsByArtistId = (id) => {
             $artistId: id
         }, (err, rows) => {
             if (err) {
-                reject(new Server(`Failed to get albums by artist ID ${id}`, err));
+                reject(new ServerError(`Failed to get albums by artist ID ${id}`, err));
             } else {
                 console.log('Got albums by artist');
                 const results = [];
@@ -122,6 +123,49 @@ const getAlbumsByArtistId = (id) => {
                     results.push(new dataObject.Album().fromDB(row));
                 }
                 resolve(results);
+            }
+        });
+    });
+};
+
+const getAllStarredAlbums = () => {
+    return new Promise((resolve, reject) => {
+        db.all(`select *
+        from ALBUMS
+        where starred > 0;`, (err, rows) => {
+            if (err) {
+                reject(new ServerError(`Failed to get all starred albums`, err));
+            } else {
+                console.log('Got all starred albums');
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Album().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
+const setStarredForAlbumId = (id, starred) => {
+    return new Promise((resolve, reject) => {
+        if (id <= 0) {
+            reject(new ServerError(`Cannot set starred to ${starred} for invalid album ID ${id}`));
+        }
+        if (starred == undefined) {
+            reject(new ServerError(`Invalid starred value ${starred} for album ID ${id}`));
+        }
+        db.run(`update ALBUMS
+        set starred = $starred
+        where album_id = $albumId;`, {
+            $starred: starred,
+            $albumId: id 
+        }, (err) => {
+            if (err) {
+                reject(new ServerError(`Failed to set starred to ${starred} for album ID ${id}`, err));
+            } else {
+                console.log(`Set starred to ${starred} for album ID ${id}`);
+                resolve();
             }
         });
     });
@@ -142,4 +186,6 @@ module.exports.addAlbum = addAlbum;
 module.exports.getAlbumByTitle = getAlbumByTitle;
 module.exports.getAllAlbums = getAllAlbums;
 module.exports.getAlbumsByArtistId = getAlbumsByArtistId;
+module.exports.getAllStarredAlbums = getAllStarredAlbums;
+module.exports.setStarredForAlbumId = setStarredForAlbumId;
 module.exports.init = init;

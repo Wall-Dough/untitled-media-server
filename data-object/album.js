@@ -7,6 +7,7 @@ class Album {
         this.artist = common.albumArtist ? common.albumArtist :
             (common.artist ? common.artist : '');
         this.genre = common.genre ? common.genre : '';
+        this.starred = false;
         return this;
     }
     fromDB(row) {
@@ -20,6 +21,7 @@ class Album {
         this.artist = row.artist == undefined ? '' : row.artist;
         this.artist = this.artist.trim() == '' ? 'Unknown album artist' : this.artist;
         this.genre = row.genre;
+        this.starred = row.starred > 0;
         return this;
     }
     toDB() {
@@ -28,6 +30,7 @@ class Album {
         db.$year = this.year;
         db.$artist = this.artist;
         db.$genre = this.genre;
+        db.$starred = this.starred;
         return db;
     }
 };

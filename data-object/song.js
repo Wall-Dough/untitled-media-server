@@ -12,6 +12,7 @@ class Song {
         this.trackNumber = common.track.no ? common.track.no : 0;
         this.year = common.year ? common.year : 0;
         this.genre = '';
+        this.starred = false;
         // this.tags = common.tags;
         // this.starred = common.starred;
         // this.filePath = common.filePath;
@@ -32,6 +33,7 @@ class Song {
         this.year = row.year;
         this.genre = row.genre;
         this.filePath = row.file_path;
+        this.starred = row.starred > 0;
         return this;
     }
     toDB() {
@@ -44,6 +46,7 @@ class Song {
         db.$year = this.year;
         db.$genre = this.genre;
         db.$filePath = this.filePath;
+        db.$starred = this.starred;
         return db;
     }
 };
