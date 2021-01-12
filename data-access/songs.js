@@ -3,14 +3,13 @@ const ServerError = require('../util').ServerError;
 
 let db = undefined;
 
-const SONG_SELECT_PART = `select s.song_id, s.file_path, s.title, s.artist_id, 
+const SONG_SELECT = `select s.song_id, s.file_path, s.title, s.artist_id, 
 s.album_id, s.disc, s.track, s.year, s.genre, s.starred,
-a.title as album, art.name as artist
-from SONGS s,
+a.title as album, art.name as artist`;
+const SONG_FROM = `from SONGS s,
 ALBUMS a,
 ARTISTS art`;
-const SONG_SELECT = `${SONG_SELECT_PART}
-where a.album_id = s.album_id
+const SONG_WHERE = `where a.album_id = s.album_id
 and art.artist_id = s.artist_id`;
 
 const insertBlankSong = () => {
@@ -72,6 +71,8 @@ const addSong = (song) => {
 const getAllSongs = () => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
+        ${SONG_FROM}
+        ${SONG_WHERE}
         and s.song_id > 0;`, (err, rows) => {
             if (err) {
                 reject(new ServerError('Failed to get all songs', err));
@@ -97,6 +98,8 @@ const getAllSongs = () => {
 const getSongById = (id) => {
     return new Promise((resolve, reject) => {
         db.get(`${SONG_SELECT}
+        ${SONG_FROM}
+        ${SONG_WHERE}
         and s.song_id = $songId;`, {
             $songId: id
         }, (err, row) => {
@@ -136,6 +139,8 @@ const getSongByPath = (path) => {
 const getSongsByAlbumId = (id) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
+        ${SONG_FROM}
+        ${SONG_WHERE}
         and s.album_id = $albumId
         and s.song_id > 0;`, {
             $albumId: id
@@ -157,6 +162,8 @@ const getSongsByAlbumId = (id) => {
 const getSongsByArtistId = (id) => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
+        ${SONG_FROM}
+        ${SONG_WHERE}
         and s.artist_id = $artistId
         and s.song_id > 0;`, {
             $artistId: id
@@ -177,11 +184,12 @@ const getSongsByArtistId = (id) => {
 
 const getSongsByGroupId = (groupId) => {
     return new Promise((resolve, reject) => {
-        db.all(`${SONG_SELECT_PART},
+        db.all(`${SONG_SELECT}
+        ${SONG_FROM},
         GROUPS_SONGS gs
-        where gs.group_id = $groupId
+        ${SONG_WHERE}
+        and gs.group_id = $groupId
         and s.song_id = gs.song_id
-        and s.album_id = a.album_id
         and s.song_id > 0;`, {
             $groupId: groupId
         }, (err, rows) => {
@@ -209,8 +217,8 @@ const getSongsByGroupId = (groupId) => {
  */
 const getSongsByPlaylistId = (playlistId) => {
     return new Promise((resolve, reject) => {
-        getSongsByGroupId(playlistId).then(() => {
-            resolve();
+        getSongsByGroupId(playlistId).then((songs) => {
+            resolve(songs);
         }).catch((err) => {
             reject(new ServerError(`Failed to get songs by playlist ID ${playlistId}`, err));
         });
@@ -220,6 +228,8 @@ const getSongsByPlaylistId = (playlistId) => {
 const getAllStarredSongs = () => {
     return new Promise((resolve, reject) => {
         db.all(`${SONG_SELECT}
+        ${SONG_FROM}
+        ${SONG_WHERE}
         and s.starred > 0;`, (err, rows) => {
             if (err) {
                 reject(new ServerError('Failed to get all starred songs', err));
