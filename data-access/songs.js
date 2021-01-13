@@ -10,7 +10,8 @@ const SONG_FROM = `from SONGS s,
 ALBUMS a,
 ARTISTS art`;
 const SONG_WHERE = `where a.album_id = s.album_id
-and art.artist_id = s.artist_id`;
+and art.artist_id = s.artist_id
+and s.song_id > 0`;
 
 const insertBlankSong = () => {
     return new Promise((resolve, reject) => {
@@ -68,22 +69,53 @@ const addSong = (song) => {
     });
 };
 
-const getAllSongs = () => {
+const getSongsByFilter = (filter) => {
     return new Promise((resolve, reject) => {
-        db.all(`${SONG_SELECT}
-        ${SONG_FROM}
-        ${SONG_WHERE}
-        and s.song_id > 0;`, (err, rows) => {
+        let select = SONG_SELECT;
+        let from = SONG_FROM;
+        let where = SONG_WHERE;
+        if (filter.starred != undefined) {
+            where += `
+            and s.starred = $starred`;
+        }
+        if (filter.playlistId > 0) {
+            from += `,
+            GROUPS_SONGS gs`;
+            where += `
+            and gs.song_id = s.song_id
+            and gs.group_id = $playlistId`;
+        }
+        if (filter.artistId > 0) {
+            where += `
+            and s.artist_id = $artistId`
+        }
+        if (filter.albumId > 0) {
+            where += `
+            and s.album_id = $albumId`;
+        }
+        db.all(`${select}
+        ${from}
+        ${where};`, filter.toDB(), (err, rows) => {
             if (err) {
-                reject(new ServerError('Failed to get all songs', err));
+                reject(new ServerError('Failed to get songs from the filter', err));
             } else {
-                console.log('Got all songs');
+                console.log('Got songs from the filter');
                 const results = [];
                 for (let row of rows) {
                     results.push(new dataObject.Song().fromDB(row));
                 }
                 resolve(results);
             }
+        })
+    });
+};
+
+const getAllSongs = () => {
+    return new Promise((resolve, reject) => {
+        getSongsByFilter(new dataObject.Filter()).then((songs) => {
+            resolve(songs);
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get all songs`, err));
         });
     });
 };
@@ -138,46 +170,20 @@ const getSongByPath = (path) => {
  */
 const getSongsByAlbumId = (id) => {
     return new Promise((resolve, reject) => {
-        db.all(`${SONG_SELECT}
-        ${SONG_FROM}
-        ${SONG_WHERE}
-        and s.album_id = $albumId
-        and s.song_id > 0;`, {
-            $albumId: id
-        }, (err, rows) => {
-            if (err) {
-                reject(new ServerError(`Failed to get songs by album ID ${id}`, err));
-            } else {
-                console.log(`Got songs by album ID ${id}`);
-                const results = [];
-                for (let row of rows) {
-                    results.push(new dataObject.Song().fromDB(row));
-                }
-                resolve(results);
-            }
+        getSongsByFilter(new dataObject.Filter().withAlbumId(id)).then((songs) => {
+            resolve(songs);
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get songs by album ID ${id}`, err));
         });
     });
 };
 
 const getSongsByArtistId = (id) => {
     return new Promise((resolve, reject) => {
-        db.all(`${SONG_SELECT}
-        ${SONG_FROM}
-        ${SONG_WHERE}
-        and s.artist_id = $artistId
-        and s.song_id > 0;`, {
-            $artistId: id
-        }, (err, rows) => {
-            if (err) {
-                reject(new ServerError(`Failed to get songs by artist ID ${id}`, err));
-            } else {
-                console.log(`Got songs by artist ID ${id}`);
-                const results = [];
-                for (let row of rows) {
-                    results.push(new dataObject.Song().fromDB(row));
-                }
-                resolve(results);
-            }
+        getSongsByFilter(new dataObject.Filter().withArtistId(id)).then((songs) => {
+            resolve(songs);
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get songs by artist ID ${id}`, err));
         });
     });
 };
@@ -227,20 +233,10 @@ const getSongsByPlaylistId = (playlistId) => {
 
 const getAllStarredSongs = () => {
     return new Promise((resolve, reject) => {
-        db.all(`${SONG_SELECT}
-        ${SONG_FROM}
-        ${SONG_WHERE}
-        and s.starred > 0;`, (err, rows) => {
-            if (err) {
-                reject(new ServerError('Failed to get all starred songs', err));
-            } else {
-                console.log('Got all starred songs');
-                const results = [];
-                for (let row of rows) {
-                    results.push(new dataObject.Song().fromDB(row));
-                }
-                resolve(results);
-            }
+        getSongsByFilter(new dataObject.Filter().withStarred(true)).then((songs) => {
+            resolve(songs);
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get all starred songs`, err));
         });
     });
 };
@@ -291,4 +287,5 @@ module.exports.getSongsByGroupId = getSongsByGroupId;
 module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
 module.exports.getAllStarredSongs = getAllStarredSongs;
 module.exports.setStarredForSongId = setStarredForSongId;
+module.exports.getSongsByFilter = getSongsByFilter;
 module.exports.init = init;

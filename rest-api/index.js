@@ -4,6 +4,7 @@ const util = require('../util');
 const ServerError = util.ServerError;
 const webInterface = require('../web-interface');
 const manager = require('../manager');
+const dataObject = require('../data-object');
 
 const app = express();
 const port = 4041;
