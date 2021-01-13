@@ -244,6 +244,10 @@ const setStarredForSongId = (id, starred) => {
     return dataAccess.songs.setStarredForSongId(id, starred);
 }
 
+const getSongsByFilter = (filter) => {
+    return dataAccess.songs.getSongsByFilter(filter);
+}
+
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
