@@ -10,6 +10,7 @@ const artists = require('./artists');
 const groups = require('./groups');
 const playlists = require('./playlists');
 const songs = require('./songs');
+const tags = require('./tags');
 
 const db = new sqlite3.Database(':memory:');
 
@@ -21,6 +22,7 @@ const init = () => {
         promises.push(groups.init(db));
         promises.push(playlists.init(db))
         promises.push(songs.init(db));
+        promises.push(tags.init(db));
         Promise.all(promises).then(() => {
             resolve();
         }).catch((err) => {
@@ -34,4 +36,5 @@ module.exports.artists = artists;
 module.exports.groups = groups;
 module.exports.playlists = playlists;
 module.exports.songs = songs;
+module.exports.tags = tags;
 module.exports.init = init;

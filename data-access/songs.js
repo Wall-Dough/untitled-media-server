@@ -1,5 +1,6 @@
 const dataObject = require('../data-object');
 const ServerError = require('../util').ServerError;
+const groups = require('./groups');
 
 let db = undefined;
 
@@ -80,10 +81,11 @@ const getSongsByFilter = (filter) => {
         }
         if (filter.playlistId > 0) {
             from += `,
-            GROUPS_SONGS gs`;
+            GROUPS_SONGS gs_pls`;
             where += `
-            and gs.song_id = s.song_id
-            and gs.group_id = $playlistId`;
+            and gs_pls.song_id = s.song_id
+            and gs_pls.group_id = $playlistId
+            and gs_pls.type_cd = ${groups.Types.PLAYLIST}`;
         }
         if (filter.artistId > 0) {
             where += `
@@ -92,6 +94,13 @@ const getSongsByFilter = (filter) => {
         if (filter.albumId > 0) {
             where += `
             and s.album_id = $albumId`;
+        }
+        if (filter.tagIds != undefined && filter.tagIds.constructor == Array && filter.tagIds.length > 0) {
+            from += `,
+            GROUPS_SONGS gs_tag`;
+            where += `
+            and gs_tag.song_id = s.song_id
+            and gs_tag.group_id in (${filter.tagIds.join(', ')})`;
         }
         db.all(`${select}
         ${from}
@@ -107,6 +116,16 @@ const getSongsByFilter = (filter) => {
                 resolve(results);
             }
         })
+    });
+};
+
+const getSongsByTagIds = (ids) => {
+    return new Promise((resolve, reject) => {
+        getSongsByFilter(new dataObject.Filter().withTagIds(ids)).then((songs) => {
+            resolve(songs);
+        }).catch((err) => {
+            reject(new ServerError(`Failed to get songs by tag IDs`, err));
+        });
     });
 };
 
@@ -288,4 +307,5 @@ module.exports.getSongsByPlaylistId = getSongsByPlaylistId;
 module.exports.getAllStarredSongs = getAllStarredSongs;
 module.exports.setStarredForSongId = setStarredForSongId;
 module.exports.getSongsByFilter = getSongsByFilter;
+module.exports.getSongsByTagIds = getSongsByTagIds;
 module.exports.init = init;

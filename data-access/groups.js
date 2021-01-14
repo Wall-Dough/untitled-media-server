@@ -5,6 +5,7 @@ let db = undefined;
 
 const Types = {};
 Types.PLAYLIST = 1;
+Types.TAG = 2;
 
 const insertBlankGroup = () => {
     return new Promise((resolve, reject) => {
@@ -131,6 +132,36 @@ const getAllGroupsByTypeCd = (typeCd) => {
     });
 };
 
+const getGroupsBySongId = (songId, typeCd) => {
+    return new Promise((resolve, reject) => {
+        let query = `select g.*
+        from GROUPS_SONGS gs,
+        GROUPS g
+        where gs.song_id = $songId
+        and gs.group_id = g.group_id`;
+        const data = {
+            $songId: songId
+        };
+        if (typeCd != undefined) {
+            query += `
+            and g.type_cd = $typeCd`
+            data.$typeCd = typeCd;
+        }
+        db.all(`${query};`, data, (err, rows) => {
+            if (err) {
+                reject(new ServerError(`Failed to get all groups with song ID ${songId} and type code ${typeCd}`, err));
+            } else {
+                console.log(`Got all groups with song ID ${songId} and type code ${typeCd}`);
+                const results = [];
+                for (let row of rows) {
+                    results.push(new dataObject.Group().fromDB(row));
+                }
+                resolve(results);
+            }
+        });
+    });
+};
+
 const init = (theDB) => {
     db = theDB;
     return new Promise((resolve, reject) => {
@@ -149,4 +180,5 @@ module.exports.Types = Types;
 module.exports.addGroup = addGroup;
 module.exports.addSongToGroup = addSongToGroup;
 module.exports.getAllGroupsByTypeCd = getAllGroupsByTypeCd;
+module.exports.getGroupsBySongId = getGroupsBySongId;
 module.exports.init = init;
