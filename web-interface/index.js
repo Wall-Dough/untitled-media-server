@@ -4,6 +4,8 @@
 
 const EOL = require('os').EOL;
 const manager = require('../manager');
+const util = require('../util');
+const fs = require('fs');
 
 /**
  * @function getHomepage
@@ -14,30 +16,14 @@ const manager = require('../manager');
  */
 const getHomepage = () => {
     return new Promise((resolve, reject) => {
-        manager.getAllSongs().then((songs) => {
-            manager.getAllAlbums().then((albums) => {
-                let homepage = '';
-                homepage += `<h3>Songs</h3>${EOL}`;
-                homepage += `<ul>${EOL}`;
-                for (let song of songs) {
-                    homepage += `<li><a href="/songs/${song.id}/stream">${song.title}</a></li>`;
-                }
-                homepage += `</ul>${EOL}`;
-
-                homepage += `<h3>Albums</h3>${EOL}`;
-                homepage += `<ul>${EOL}`;
-                for (let album of albums) {
-                    homepage += `<li><a href="/albums/${album.id}/stream">${album.title}</a></li>`;
-                }
-                homepage += `</ul>${EOL}`;
-
-                resolve(homepage);
-            }).catch((err) => {
-                reject(err);
+        fs.readFile(util.relativePath('../web-interface/head.html'), (err, head) => {
+            fs.readFile(util.relativePath('../web-interface/body.html'), (err, body) => {
+                resolve(`<html>
+                ${head}
+                ${body}
+                </html>`);
             });
-        }).catch((err) => {
-            reject(err);
-        });
+        })
     });
 };
 

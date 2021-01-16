@@ -75,6 +75,7 @@ const getSongsByFilter = (filter) => {
         let select = SONG_SELECT;
         let from = SONG_FROM;
         let where = SONG_WHERE;
+        let order = 'order by s.title asc';
         if (filter.starred != undefined) {
             where += `
             and s.starred = $starred`;
@@ -94,6 +95,7 @@ const getSongsByFilter = (filter) => {
         if (filter.albumId > 0) {
             where += `
             and s.album_id = $albumId`;
+            order = 'order by s.track asc';
         }
         if (filter.tagIds != undefined && filter.tagIds.constructor == Array && filter.tagIds.length > 0) {
             from += `,
@@ -104,7 +106,8 @@ const getSongsByFilter = (filter) => {
         }
         db.all(`${select}
         ${from}
-        ${where};`, filter.toDB(), (err, rows) => {
+        ${where}
+        ${order};`, filter.toDB(), (err, rows) => {
             if (err) {
                 reject(new ServerError('Failed to get songs from the filter', err));
             } else {
