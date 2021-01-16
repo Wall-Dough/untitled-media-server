@@ -330,6 +330,24 @@ app.post('/folders', (req, res) => {
     });
 });
 
+const serveFromFolder = (req, res, folder) => {
+    fs.readFile(util.relativePath(`../web-interface/${folder}/${req.params.fileName}`), (err, data) => {
+        if (err) {
+            res.status(500).send(err.message);
+        } else {
+            res.status(200).type('text/javascript').send(data);
+        }
+    });
+};
+
+app.get('/js/:fileName', (req, res) => {
+    serveFromFolder(req, res, "js");
+});
+
+app.get('/css/:fileName', (req, res) => {
+    serveFromFolder(req, res, "css");
+});
+
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });

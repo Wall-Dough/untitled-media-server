@@ -1,0 +1,11 @@
+#items.container {
+    padding-bottom: 60px;
+}
+
+#items.container > .row {
+    cursor: pointer;
+}
+
+#items.container > .row:hover {
+    background-color: lightgray;
+}

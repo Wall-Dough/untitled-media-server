@@ -59,7 +59,8 @@ const addArtist = (artist) => {
 const getAllArtists = () => {
     return new Promise((resolve, reject) => {
         db.all(`select * from ARTISTS
-        where artist_id > 0;`, (err, rows) => {
+        where artist_id > 0
+        order by name asc;`, (err, rows) => {
             if (err) {
                 reject(new ServerError('Failed to get all artists', err));
             } else {
