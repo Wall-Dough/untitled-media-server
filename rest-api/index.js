@@ -194,8 +194,15 @@ app.get('/playlists/:playlistId/stream', (req, res) => {
     });
 });
 
-app.get('/songs/', (req, res) => {
-    manager.getAllSongs().then((songs) => {
+app.get('/songs', (req, res) => {
+    let promise;
+    if (req.query.tagIds) {
+        const tagIds = req.query.tagIds.split(',').map(Number);
+        promise = manager.getSongsByTagIds(tagIds);
+    } else {
+        promise = manager.getAllSongs();
+    }
+    promise.then((songs) => {
         res.status(200).send(songs);
     }).catch((err) => {
         console.log('Get all songs request failed');
@@ -256,6 +263,63 @@ app.get('/songs/:songId/file', (req, res) => {
         res.status(500).send(err.message);
     });
 });
+
+app.get('/songs/:songId/tags', (req, res) => {
+    manager.getTagsBySongId(Number(req.params.songId)).then((tags) => {
+        res.status(200).send(tags);
+    }).catch((err) => {
+        console.log('Get tags by song ID request failed');
+        res.status(500).send(err.message);
+    });
+})
+
+app.put('/songs/:songId/tags/:tagId', (req, res) => {
+    manager.addSongToTag(Number(req.params.tagId), Number(req.params.songId)).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add song to tag request failed');
+    })
+});
+
+app.delete('/songs/:songId/tags/:tagId', (req, res) => {
+    res.status(404).send('Remove tag from song not yet implemented');
+});
+
+app.get('/tags', (req, res) => {
+    manager.getAllTags().then((tags) => {
+        res.status(200).send(tags);
+    }).catch((err) => {
+        console.log('Get all tags request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.put('/tags', (req, res) => {
+    manager.addTag(req.query.name).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        console.log('Add tag request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.get('/tags/:tagId', (req, res) => {
+    manager.getSongsByTagIds([Number(req.params.tagId)]).then((songs) => {
+        res.status(200).send(songs);
+    }).catch((err) => {
+        console.log('Get tag by ID request failed');
+        res.status(500).send(err.message);
+    });
+});
+
+app.get('/tags/:tagId/songs', (req, res) => {
+    manager.getSongsByTagIds([Number(req.params.tagId)]).then((songs) => {
+        res.status(200).send(songs);
+    }).catch((err) => {
+        console.log('Get songs by tag ID request failed');
+        res.status(500).send(err.message);
+    });
+})
 
 app.post('/folders', (req, res) => {
     manager.scanFoldersForMediaFiles().then(() => {

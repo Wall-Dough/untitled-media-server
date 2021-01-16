@@ -4,6 +4,7 @@ class Filter {
         this.playlistId = 0;
         this.artistId = 0;
         this.albumId = 0;
+        this.tagIds = [];
     }
     withStarred(starred) {
         this.starred = starred;
@@ -19,6 +20,14 @@ class Filter {
     }
     withAlbumId(albumId) {
         this.albumId = albumId;
+        return this;
+    }
+    withTagIds(tagIds) {
+        this.tagIds = tagIds;
+        return this;
+    }
+    addTagId(tagId) {
+        this.tagIds.add(tagId);
         return this;
     }
     toDB() {

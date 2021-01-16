@@ -248,6 +248,26 @@ const getSongsByFilter = (filter) => {
     return dataAccess.songs.getSongsByFilter(filter);
 }
 
+const addTag = (tagName) => {
+    return dataAccess.tags.addTag(tagName);
+}
+
+const getTagsBySongId = (id) => {
+    return dataAccess.tags.getTagsBySongId(id);
+}
+
+const getSongsByTagIds = (ids) => {
+    return dataAccess.songs.getSongsByTagIds(ids);
+}
+
+const addSongToTag = (tagId, songId) => {
+    return dataAccess.tags.addSongToTag(tagId, songId);
+}
+
+const getAllTags = () => {
+    return dataAccess.tags.getAllTags();
+}
+
 module.exports.addSongFromPath = addSongFromPath;
 module.exports.getAllSongs = getAllSongs;
 module.exports.getSongById = getSongById;
@@ -266,3 +286,8 @@ module.exports.getAllStarredAlbums = getAllStarredAlbums;
 module.exports.setStarredForAlbumId = setStarredForAlbumId;
 module.exports.getAllStarredSongs = getAllStarredSongs;
 module.exports.setStarredForSongId = setStarredForSongId;
+module.exports.getTagsBySongId = getTagsBySongId;
+module.exports.getSongsByTagIds = getSongsByTagIds;
+module.exports.addSongToTag = addSongToTag;
+module.exports.getAllTags = getAllTags;
+module.exports.addTag = addTag;
